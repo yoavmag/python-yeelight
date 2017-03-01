@@ -489,6 +489,7 @@ class Bulb(object):
         s.close()  # Close the listening socket.
         self.__socket.close()
         self.__socket = conn
+        self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
         self._music_mode = True
 
         return "ok"
