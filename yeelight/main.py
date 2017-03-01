@@ -151,6 +151,7 @@ class Bulb(object):
         self._last_properties = {}  # The last set of properties we've seen.
         self._music_mode = False    # Whether we're currently in music mode.
         self.__socket = None        # The socket we use to communicate.
+        self.__music = None         # a dedicated music socket
 
     @property
     def _cmd_id(self):
@@ -232,29 +233,25 @@ class Bulb(object):
         :returns: A dictionary of param: value items.
         :rtype: dict
         """
-        # When we are in music mode, the bulb does not respond to queries
-        # therefore we need to keep the state up-to-date ourselves
-        if self._music_mode:
-            return self._last_properties
-
         requested_properties = [
             "power", "bright", "ct", "rgb", "hue", "sat",
             "color_mode", "flowing", "delayoff", "flow_params",
             "music_on", "name"
         ]
-        response = self.send_command("get_prop", requested_properties)
+        response = self.send_command("get_prop", requested_properties, True)
         properties = response["result"]
         properties = [x if x else None for x in properties]
 
         self._last_properties = dict(zip(requested_properties, properties))
         return self._last_properties
 
-    def send_command(self, method, params=None):
+    def send_command(self, method, params=None, bypass_music=False):
         """
         Send a command to the bulb.
 
         :param str method:  The name of the method to send.
         :param list params: The list of parameters for the method.
+        :param bool bypass_music: should it use the standard socket ?
 
         :raises BulbException: When the bulb indicates an error condition.
         :returns: The response from the bulb.
@@ -267,6 +264,16 @@ class Bulb(object):
 
         _LOGGER.debug("%s > %s", self, command)
 
+        if self._music_mode and bypass_music is False:
+            try:
+                self.__music.send((json.dumps(command) + "\r\n").encode("utf8"))
+                # We're in music mode, nothing else will happen.
+                return {"result": ["ok"]}
+            except socket.error as ex:
+                self._stop_music()
+                # try again without music mode
+                return self.send_command(method, params)
+
         try:
             self._socket.send((json.dumps(command) + "\r\n").encode("utf8"))
         except socket.error as ex:
@@ -274,11 +281,8 @@ class Bulb(object):
             # create a new one.
             self.__socket.close()
             self.__socket = None
+            self._stop_music()
             raise_from(BulbException('A socket error occurred when sending the command.'), ex)
-
-        if self._music_mode:
-            # We're in music mode, nothing else will happen.
-            return {"result": ["ok"]}
 
         # The bulb will send us updates on its state in addition to responses,
         # so we want to make sure that we read until we see an actual response.
@@ -290,6 +294,7 @@ class Bulb(object):
                 # An error occured, let's close and abort...
                 self.__socket.close()
                 self.__socket = None
+                self._stop_music()
                 response = {"error": "Bulb closed the connection."}
                 break
 
@@ -487,11 +492,16 @@ class Bulb(object):
         s.settimeout(5)
         conn, _ = s.accept()
         s.close()  # Close the listening socket.
-        self.__socket.close()
-        self.__socket = conn
+        self.__music = conn
         self._music_mode = True
 
         return "ok"
+
+    def _stop_music(self):
+        if self.__music:
+            self.__music.close()
+            self.__music = None
+        self._music_mode = False
 
     @_command
     def stop_music(self):
@@ -501,10 +511,7 @@ class Bulb(object):
         Stopping music mode will close the previous connection. Calling
         ``stop_music`` more than once, or while not in music mode, is safe.
         """
-        if self.__socket:
-            self.__socket.close()
-            self.__socket = None
-        self._music_mode = False
+        self._stop_music()
         return "set_music", [0]
 
     @_command
