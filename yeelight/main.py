@@ -172,6 +172,11 @@ class Bulb(object):
             self.__socket.connect((self._ip, self._port))
         return self.__socket
 
+    def _close_socket(self):
+        if self.__socket:
+            self.__socket.close()
+            self.__socket = None
+
     def ensure_on(self):
         """Turn the bulb on if it is off."""
         if self._music_mode is True or self.auto_on is False:
@@ -279,8 +284,7 @@ class Bulb(object):
         except socket.error as ex:
             # Some error occurred, remove this socket in hopes that we can later
             # create a new one.
-            self.__socket.close()
-            self.__socket = None
+            self._close_socket()
             self._stop_music()
             raise_from(BulbException('A socket error occurred when sending the command.'), ex)
 
@@ -292,8 +296,7 @@ class Bulb(object):
                 data = self._socket.recv(16 * 1024)
             except socket.error:
                 # An error occured, let's close and abort...
-                self.__socket.close()
-                self.__socket = None
+                self._close_socket()
                 self._stop_music()
                 response = {"error": "Bulb closed the connection."}
                 break
