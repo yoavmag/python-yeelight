@@ -40,10 +40,7 @@ def _command(f, *args, **kw):
             }
             # Handle toggling separately, as it depends on previous power state.
             if method == "toggle":
-                if self._last_properties["power"] == "off":
-                    self._last_properties["power"] = "on"
-                else:
-                    self._last_properties["power"] = "off"
+                self._last_properties["power"] = "on" if self._last_properties["power"] == "off" else "off"
             elif method in action_property_map:
                 set_prop = action_property_map[method]
                 update_props = {set_prop[prop]: params[prop] for prop in range(len(set_prop))}
