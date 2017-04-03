@@ -18,6 +18,9 @@ class SocketMock(object):
     def recv(self, length):
         return self.received
 
+    def settimeout(self, timeout):
+        return
+
 
 class Tests(unittest.TestCase):
     def setUp(self):
