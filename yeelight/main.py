@@ -3,6 +3,9 @@ import json
 import logging
 import socket
 
+import select
+import errno
+
 from enum import Enum
 
 from future.utils import raise_from
@@ -24,6 +27,7 @@ def _command(f, *args, **kw):
     self = args[0]
     effect = kw.get("effect", self.effect)
     duration = kw.get("duration", self.duration)
+    blocking = kw.get("blocking", False)
 
     method, params = f(*args, **kw)
     if method in ["set_ct_abx", "set_rgb", "set_hsv", "set_bright",
@@ -49,7 +53,7 @@ def _command(f, *args, **kw):
         # Add the effect parameters.
         params += [effect, duration]
 
-    result = self.send_command(method, params).get("result", [])
+    result = self.send_command(method, params, blocking).get("result", [])
     if result:
         return result[0]
 
@@ -167,8 +171,9 @@ class Bulb(object):
         """Return, optionally creating, the communication socket."""
         if self.__socket is None:
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.__socket.settimeout(5)
+            #self.__socket.settimeout(5)
             self.__socket.connect((self._ip, self._port))
+            self.__socket.setblocking(0)
         return self.__socket
 
     def ensure_on(self):
@@ -223,7 +228,7 @@ class Bulb(object):
         """
         return self._music_mode
 
-    def get_properties(self):
+    def get_properties(self, blocking=False):
         """
         Retrieve and return the properties of the bulb.
 
@@ -242,14 +247,14 @@ class Bulb(object):
             "color_mode", "flowing", "delayoff", "flow_params",
             "music_on", "name"
         ]
-        response = self.send_command("get_prop", requested_properties)
+        response = self.send_command("get_prop", requested_properties, blocking)
         properties = response["result"]
         properties = [x if x else None for x in properties]
 
         self._last_properties = dict(zip(requested_properties, properties))
         return self._last_properties
 
-    def send_command(self, method, params=None):
+    def send_command(self, method, params=None, blocking=False):
         """
         Send a command to the bulb.
 
@@ -272,6 +277,7 @@ class Bulb(object):
         except socket.error as ex:
             # Some error occurred, remove this socket in hopes that we can later
             # create a new one.
+            raise ex
             self.__socket.close()
             self.__socket = None
             raise_from(BulbException('A socket error occurred when sending the command.'), ex)
@@ -282,11 +288,17 @@ class Bulb(object):
 
         # The bulb will send us updates on its state in addition to responses,
         # so we want to make sure that we read until we see an actual response.
+        if not blocking:
+            return {"result": ["ok"]}
         response = None
         while response is None:
             try:
+                ready = select.select([self._socket], [], [], 5)
                 data = self._socket.recv(16 * 1024)
-            except socket.error:
+            except socket.error, v:
+                if v[0] != errno.EWOULDBLOCK:
+                    # Not the error we are looking for, re-try
+                    break
                 # An error occured, let's close and abort...
                 self.__socket.close()
                 self.__socket = None
@@ -344,7 +356,7 @@ class Bulb(object):
         return "set_rgb", [red * 65536 + green * 256 + blue]
 
     @_command
-    def set_adjust(self, action, prop):
+    def set_adjust(self, action, prop, **kwargs):
         """
         Adjust a parameter.
 
@@ -419,17 +431,17 @@ class Bulb(object):
         return "set_power", ["off"]
 
     @_command
-    def toggle(self):
+    def toggle(self, **kwargs):
         """Toggle the bulb on or off."""
         return "toggle", []
 
     @_command
-    def set_default(self):
+    def set_default(self, **kwargs):
         """Set the bulb's current state as default."""
         return "set_default", []
 
     @_command
-    def set_name(self, name):
+    def set_name(self, name, **kwargs):
         """
         Set the bulb's name.
 
@@ -438,7 +450,7 @@ class Bulb(object):
         return "set_name", [name]
 
     @_command
-    def start_flow(self, flow):
+    def start_flow(self, flow, **kwargs):
         """
         Start a flow.
 
@@ -452,11 +464,11 @@ class Bulb(object):
         return "start_cf", [flow.count * len(flow.transitions), flow.action.value, flow.expression]
 
     @_command
-    def stop_flow(self):
+    def stop_flow(self, **kwargs):
         """Stop a flow."""
         return "stop_cf", []
 
-    def start_music(self, port=0):
+    def start_music(self, port=0, **kwargs):
         """
         Start music mode.
 
@@ -487,7 +499,7 @@ class Bulb(object):
         s.listen(3)
 
         local_ip = self._socket.getsockname()[0]
-        self.send_command("set_music", [1, local_ip, port])
+        self.send_command("set_music", [1, local_ip, port], blocking)
         s.settimeout(5)
         conn, _ = s.accept()
         s.close()  # Close the listening socket.
@@ -495,10 +507,10 @@ class Bulb(object):
         self.__socket = conn
         self._music_mode = True
 
-        return "ok"
+        return "ok3"
 
     @_command
-    def stop_music(self):
+    def stop_music(self, **kwargs):
         """
         Stop music mode.
 
@@ -512,7 +524,7 @@ class Bulb(object):
         return "set_music", [0]
 
     @_command
-    def cron_add(self, event_type, value):
+    def cron_add(self, event_type, value, **kwargs):
         """
         Add an event to cron.
 
@@ -526,7 +538,7 @@ class Bulb(object):
         return "cron_add", [event_type.value, value]
 
     @_command
-    def cron_get(self, event_type):
+    def cron_get(self, event_type, **kwargs):
         """
         Retrieve an event from cron.
 
@@ -536,7 +548,7 @@ class Bulb(object):
         return "cron_get", [event_type.value]
 
     @_command
-    def cron_del(self, event_type):
+    def cron_del(self, event_type, **kwargs):
         """
         Remove an event from cron.
 
@@ -544,6 +556,35 @@ class Bulb(object):
                                                    only ``CronType.off``.
         """
         return "cron_del", [event_type.value]
+
+    def get(self, timeout=0.1):
+        """
+        Return the next message sent by the Bulb, or, after
+        ``timeout`` has passed, return ``None``.
+
+        :param int timeout: How many seconds to wait for replies.
+        """
+
+        ready = select.select([self._socket], [], [], timeout or 0)
+        if ready[0]:
+            data = self._socket.recv(16 * 1024)
+            response = ""
+            for line in data.split(b"\r\n"):
+                if not line:
+                    continue
+
+                try:
+                    line = json.loads(line.decode("utf8"))
+                    _LOGGER.debug("%s < %s", self, line)
+                except ValueError:
+                    line = {"result": ["invalid command"]}
+
+                if line.get("method") == "props":
+                    self._last_properties.update(line["params"])
+                response = line
+
+
+            return response
 
     def __repr__(self):
         return "Bulb<{ip}:{port}, type={type}>".format(
