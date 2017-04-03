@@ -468,7 +468,7 @@ class Bulb(object):
         """Stop a flow."""
         return "stop_cf", []
 
-    def start_music(self, port=0, **kwargs):
+    def start_music(self, port=0):
         """
         Start music mode.
 
@@ -507,7 +507,7 @@ class Bulb(object):
         self.__socket = conn
         self._music_mode = True
 
-        return "ok3"
+        return "ok"
 
     @_command
     def stop_music(self, **kwargs):
@@ -565,26 +565,29 @@ class Bulb(object):
         :param int timeout: How many seconds to wait for replies.
         """
 
+
         ready = select.select([self._socket], [], [], timeout or 0)
-        if ready[0]:
-            data = self._socket.recv(16 * 1024)
-            response = ""
-            for line in data.split(b"\r\n"):
-                if not line:
-                    continue
 
-                try:
-                    line = json.loads(line.decode("utf8"))
-                    _LOGGER.debug("%s < %s", self, line)
-                except ValueError:
-                    line = {"result": ["invalid command"]}
+        if not ready[0]:
+            return
+        data = self._socket.recv(16 * 1024)
+        response = ""
+        for line in data.split(b"\r\n"):
+            if not line:
+                continue
 
-                if line.get("method") == "props":
-                    self._last_properties.update(line["params"])
-                response = line
+            try:
+                line = json.loads(line.decode("utf8"))
+                _LOGGER.debug("%s < %s", self, line)
+            except ValueError:
+                line = {"result": ["invalid command"]}
+
+            if line.get("method") == "props":
+                self._last_properties.update(line["params"])
+            response = line
 
 
-            return response
+        return response
 
     def __repr__(self):
         return "Bulb<{ip}:{port}, type={type}>".format(
