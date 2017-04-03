@@ -27,7 +27,7 @@ def _command(f, *args, **kw):
     self = args[0]
     effect = kw.get("effect", self.effect)
     duration = kw.get("duration", self.duration)
-    blocking = kw.get("blocking", False)
+    blocking = kw.get("blocking", True)
 
     method, params = f(*args, **kw)
     if method in ["set_ct_abx", "set_rgb", "set_hsv", "set_bright",
@@ -228,7 +228,7 @@ class Bulb(object):
         """
         return self._music_mode
 
-    def get_properties(self, blocking=False):
+    def get_properties(self, blocking=True):
         """
         Retrieve and return the properties of the bulb.
 
@@ -254,7 +254,7 @@ class Bulb(object):
         self._last_properties = dict(zip(requested_properties, properties))
         return self._last_properties
 
-    def send_command(self, method, params=None, blocking=False):
+    def send_command(self, method, params=None, blocking=True):
         """
         Send a command to the bulb.
 
