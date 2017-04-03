@@ -170,6 +170,35 @@ cost you an extra message per command, so watch out for rate-limiting::
 For documentation of the Flow feature, see :doc:`flow`.
 
 
+If you want to handle messages from the bulb by yourself (e.g. if you want to 
+recognize external changes to the bulb) you have to set the bulb to non-blocking 
+mode by passing ``blocking = False`` at bulb construction. Now you can run another 
+Thread calling :py:meth:`get() <yeelight.Bulb.get()>` in a while loop:
+
+    from yeelight import Bulb
+    from time import sleep
+    from threading import Thread
+
+    bulb = Bulb("192.168.0.19", blocking=False)
+
+    def receiveThread():
+        while True:
+            msg = bulb.receive()
+            if msg != None:
+                print(msg)
+
+    t = Thread(target=receiveThread)
+    t.start()
+
+    sleep(2)
+    bulb.turn_on()
+    sleep(2)
+    bulb.turn_off()
+    sleep(10)
+
+This will also update the properties so last_properties is up to date.
+
+
 Effects
 -------
 

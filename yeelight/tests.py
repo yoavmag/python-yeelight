@@ -22,7 +22,7 @@ class SocketMock(object):
 class Tests(unittest.TestCase):
     def setUp(self):
         self.socket = SocketMock()
-        self.bulb = Bulb(ip="", auto_on=True)
+        self.bulb = Bulb(ip="127.0.0.1", auto_on=True)
         self.bulb._Bulb__socket = self.socket
 
     def test_rgb1(self):

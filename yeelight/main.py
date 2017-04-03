@@ -17,6 +17,26 @@ from .flow import Flow
 
 _LOGGER = logging.getLogger(__name__)
 
+def isUp(host):
+    """
+    Returns True if host responds to a ping request
+
+    :param str host: IP or URL to ping.
+    """
+    import subprocess, platform, os
+
+    # Added to pass tests
+    if host == "127.0.0.1":
+        return True
+
+    # Ping parameters as function of OS
+    ping_str = "-n 1" if  platform.system().lower()=="windows" else "-c 1"
+    args = "ping " + " " + ping_str + " " + host
+    need_sh = False if  platform.system().lower()=="windows" else True
+
+    # Ping
+    FNULL = open(os.devnull, 'w')
+    return subprocess.call(args, shell=need_sh, stdout=FNULL, stderr=subprocess.STDOUT) == 0
 
 @decorator
 def _command(f, *args, **kw):
@@ -120,25 +140,28 @@ class BulbType(Enum):
 
 class Bulb(object):
     def __init__(self, ip, port=55443, effect="smooth",
-                 duration=300, auto_on=False):
+                 duration=300, auto_on=False, blocking=True):
         """
         The main controller class of a physical YeeLight bulb.
 
-        :param str ip:       The IP of the bulb.
-        :param int port:     The port to connect to on the bulb.
-        :param str effect:   The type of effect. Can be "smooth" or "sudden".
-        :param int duration: The duration of the effect, in milliseconds. The
-                             minimum is 30. This is ignored for sudden effects.
-        :param bool auto_on: Whether to call :py:meth:`ensure_on()
-                             <yeelight.Bulb.ensure_on>` to turn the bulb on
-                             automatically before each operation, if it is off.
-                             This renews the properties of the bulb before each
-                             message, costing you one extra message per command.
-                             Turn this off and do your own checking with
-                             :py:meth:`get_properties()
-                             <yeelight.Bulb.get_properties()>` or run
-                             :py:meth:`ensure_on() <yeelight.Bulb.ensure_on>`
-                             yourself if you're worried about rate-limiting.
+        :param str ip:        The IP of the bulb.
+        :param int port:      The port to connect to on the bulb.
+        :param str effect:    The type of effect. Can be "smooth" or "sudden".
+        :param int duration:  The duration of the effect, in milliseconds. The
+                              minimum is 30. This is ignored for sudden effects.
+        :param bool auto_on:  Whether to call :py:meth:`ensure_on()
+                              <yeelight.Bulb.ensure_on>` to turn the bulb on
+                              automatically before each operation, if it is off.
+                              This renews the properties of the bulb before each
+                              message, costing you one extra message per command.
+                              Turn this off and do your own checking with
+                              :py:meth:`get_properties()
+                              <yeelight.Bulb.get_properties()>` or run
+                              :py:meth:`ensure_on() <yeelight.Bulb.ensure_on>`
+                              yourself if you're worried about rate-limiting.
+        :param bool blocking: Set to False if you want to handle messages from
+                              the bulb by yourself with :py:meth:`get()
+                              <yeelight.Bulb.get()>`. Default is True.
         """
         self._ip = ip
         self._port = port
@@ -146,6 +169,8 @@ class Bulb(object):
         self.effect = effect
         self.duration = duration
         self.auto_on = auto_on
+
+        self.blocking = blocking
 
         self.__cmd_id = 0           # The last command id we used.
         self._last_properties = {}  # The last set of properties we've seen.
@@ -167,7 +192,7 @@ class Bulb(object):
         """Return, optionally creating, the communication socket."""
         if self.__socket is None:
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.__socket.settimeout(5)
+            self.__socket.settimeout(0.1)
             self.__socket.connect((self._ip, self._port))
         return self.__socket
 
@@ -280,12 +305,16 @@ class Bulb(object):
             # We're in music mode, nothing else will happen.
             return {"result": ["ok"]}
 
+        if not self.blocking:
+            return {"result": ["ok"]}
         # The bulb will send us updates on its state in addition to responses,
         # so we want to make sure that we read until we see an actual response.
         response = None
         while response is None:
             try:
+                self._socket.settimeout(5)
                 data = self._socket.recv(16 * 1024)
+                self._socket.settimeout(0)
             except socket.error:
                 # An error occured, let's close and abort...
                 self.__socket.close()
@@ -315,7 +344,7 @@ class Bulb(object):
         return response
 
     @_command
-    def set_color_temp(self, degrees):
+    def set_color_temp(self, degrees, **kwargs):
         """
         Set the bulb's color temperature.
 
@@ -328,7 +357,7 @@ class Bulb(object):
         return "set_ct_abx", [degrees]
 
     @_command
-    def set_rgb(self, red, green, blue):
+    def set_rgb(self, red, green, blue, **kwargs):
         """
         Set the bulb's RGB value.
 
@@ -397,7 +426,7 @@ class Bulb(object):
             return "start_cf", [1, 1, "%s, 1, %s, %s" % (duration, rgb, value)]
 
     @_command
-    def set_brightness(self, brightness):
+    def set_brightness(self, brightness, **kwargs):
         """
         Set the bulb's brightness.
 
@@ -409,12 +438,12 @@ class Bulb(object):
         return "set_bright", [brightness]
 
     @_command
-    def turn_on(self):
+    def turn_on(self, **kwargs):
         """Turn the bulb on."""
         return "set_power", ["on"]
 
     @_command
-    def turn_off(self):
+    def turn_off(self, **kwargs):
         """Turn the bulb off."""
         return "set_power", ["off"]
 
@@ -544,6 +573,56 @@ class Bulb(object):
                                                    only ``CronType.off``.
         """
         return "cron_del", [event_type.value]
+
+    def receive(self, timeout=0.1):
+        """
+        Return the next message sent by the Bulb, or, after ``timeout`` has passed,
+        return ``None``. Needs blocking set to ``False`` on construction.
+
+        :param int timeout: How many seconds to wait for replies.
+
+        :raises BulbException: When the bulb indicates an error condition.
+        """
+        assert self.blocking == False
+
+        if not isUp(self._ip):
+            self.__socket.close()
+            self.__socket = None
+            raise BulbException('A socket error occurred when receiving. Bulb is not reachable.')
+
+        try:
+            self._socket.settimeout(timeout)
+            data = self._socket.recv(16 * 1024)
+            self._socket.settimeout(0)
+        except socket.timeout as ex:
+            return
+        except socket.error as ex:
+            # An error occured, let's close and abort...
+            self.__socket.close()
+            self.__socket = None
+            raise_from(BulbException('A socket error occurred when receiving command.'), ex)
+        else:
+            if len(data) == 0:
+                # Empty message means server closed the connection
+                self.__socket.close()
+                self.__socket = None
+                raise BulbException('A socket error occurred when receiving command. Bulb closed the connection.')
+            else:
+                # got a message do something :)
+                for line in data.split(b"\r\n"):
+                    if not line:
+                        continue
+                    try:
+                        line = json.loads(line.decode("utf8"))
+                        _LOGGER.debug("%s < %s", self, line)
+                    except ValueError:
+                        line = {"result": ["invalid command"]}
+
+                    if line.get("method") == "props":
+                        self._last_properties.update(line["params"])
+                    response = line
+
+        return response
 
     def __repr__(self):
         return "Bulb<{ip}:{port}, type={type}>".format(
