@@ -621,6 +621,8 @@ class Bulb(object):
                     except ValueError:
                         line = {"result": ["invalid command"]}
                     if "result" in line:
+                        if line["result"] == ["ok"]:
+                            return line
                         requested_properties = [
                             "power", "bright", "ct", "rgb", "hue", "sat",
                             "color_mode", "flowing", "delayoff", "flow_params",
@@ -631,8 +633,7 @@ class Bulb(object):
                         self._last_properties = dict(zip(requested_properties, properties))
                     elif line.get("method") == "props":
                         self._last_properties.update(line["params"])
-                    response = line
-        return response
+                    return line
 
     def __repr__(self):
         return "Bulb<{ip}:{port}, type={type}>".format(
