@@ -268,10 +268,13 @@ class Bulb(object):
             "music_on", "name"
         ]
         response = self.send_command("get_prop", requested_properties)
-        properties = response["result"]
-        properties = [x if x else None for x in properties]
 
-        self._last_properties = dict(zip(requested_properties, properties))
+        if self.blocking:
+            properties = response["result"]
+            properties = [x if x else None for x in properties]
+
+            self._last_properties = dict(zip(requested_properties, properties))
+
         return self._last_properties
 
     def send_command(self, method, params=None):
@@ -617,11 +620,18 @@ class Bulb(object):
                         _LOGGER.debug("%s < %s", self, line)
                     except ValueError:
                         line = {"result": ["invalid command"]}
-
-                    if line.get("method") == "props":
+                    if "result" in line:
+                        requested_properties = [
+                            "power", "bright", "ct", "rgb", "hue", "sat",
+                            "color_mode", "flowing", "delayoff", "flow_params",
+                            "music_on", "name"
+                        ]
+                        properties = line["result"]
+                        properties = [x if x else None for x in properties]
+                        self._last_properties = dict(zip(requested_properties, properties))
+                    elif line.get("method") == "props":
                         self._last_properties.update(line["params"])
                     response = line
-
         return response
 
     def __repr__(self):
