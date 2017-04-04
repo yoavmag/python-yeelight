@@ -15,20 +15,17 @@ except ImportError:
 from .decorator import decorator
 from .flow import Flow
 
+# Needed for ping
+import subprocess, platform, os
+
 _LOGGER = logging.getLogger(__name__)
 
-def isUp(host):
+def ping(host):
     """
     Returns True if host responds to a ping request
 
     :param str host: IP or URL to ping.
     """
-    import subprocess, platform, os
-
-    # Added to pass tests
-    if host == "127.0.0.1":
-        return True
-
     # Ping parameters as function of OS
     ping_str = "-n 1" if  platform.system().lower()=="windows" else "-c 1"
     args = "ping " + " " + ping_str + " " + host
@@ -192,7 +189,7 @@ class Bulb(object):
         """Return, optionally creating, the communication socket."""
         if self.__socket is None:
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.__socket.settimeout(0.1)
+            self.__socket.settimeout(5)
             self.__socket.connect((self._ip, self._port))
         return self.__socket
 
@@ -315,9 +312,7 @@ class Bulb(object):
         response = None
         while response is None:
             try:
-                self._socket.settimeout(5)
                 data = self._socket.recv(16 * 1024)
-                self._socket.settimeout(0)
             except socket.error:
                 # An error occured, let's close and abort...
                 self.__socket.close()
@@ -588,7 +583,7 @@ class Bulb(object):
         """
         assert self.blocking == False
 
-        if not isUp(self._ip):
+        if not ping(self._ip):
             self.__socket.close()
             self.__socket = None
             raise BulbException('A socket error occurred when receiving. Bulb is not reachable.')
@@ -596,7 +591,7 @@ class Bulb(object):
         try:
             self._socket.settimeout(timeout)
             data = self._socket.recv(16 * 1024)
-            self._socket.settimeout(0)
+            self._socket.settimeout(5)
         except socket.timeout as ex:
             return
         except socket.error as ex:

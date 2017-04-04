@@ -5,8 +5,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(__file__ + "/../.."))
 
-from yeelight import Bulb  # noqa
-
+import yeelight  # noqa
 
 class SocketMock(object):
     def __init__(self, received=b'{"id": 0, "result": ["ok"]}'):
@@ -22,10 +21,12 @@ class SocketMock(object):
         return
 
 
+
 class Tests(unittest.TestCase):
     def setUp(self):
         self.socket = SocketMock()
-        self.bulb = Bulb(ip="127.0.0.1", auto_on=True)
+        self.bulb = yeelight.Bulb(ip="", auto_on=True)
+        yeelight.ping = lambda: True
         self.bulb._Bulb__socket = self.socket
 
     def test_rgb1(self):
