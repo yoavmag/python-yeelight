@@ -15,25 +15,9 @@ except ImportError:
 from .decorator import decorator
 from .flow import Flow
 
-# Needed for ping
-import subprocess, platform, os
-
 _LOGGER = logging.getLogger(__name__)
 
-def ping(host):
-    """
-    Returns True if host responds to a ping request
 
-    :param str host: IP or URL to ping.
-    """
-    # Ping parameters as function of OS
-    ping_str = "-n 1" if  platform.system().lower()=="windows" else "-c 1"
-    args = "ping " + " " + ping_str + " " + host
-    need_sh = False if  platform.system().lower()=="windows" else True
-
-    # Ping
-    FNULL = open(os.devnull, 'w')
-    return subprocess.call(args, shell=need_sh, stdout=FNULL, stderr=subprocess.STDOUT) == 0
 
 @decorator
 def _command(f, *args, **kw):
@@ -174,6 +158,30 @@ class Bulb(object):
         self._music_mode = False    # Whether we're currently in music mode.
         self.__socket = None        # The socket we use to communicate.
 
+        self.request_properties = [
+            "power", "bright", "ct", "rgb", "hue", "sat",
+            "color_mode", "flowing", "delayoff", "flow_params",
+            "music_on", "name"
+        ]
+
+    def is_connected(self):
+        """
+        Returns True if bulb responds to a connection request
+        """
+        try:
+            test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            test_socket.settimeout(5)
+            test_socket.connect((self._ip, self._port))
+        except socket.timeout as ex:
+            # Timeout -> its likley that bulb is offline
+            return False
+        except socket.error as ex:
+            # What if an error occures? Raise exception or return False?
+            return False
+
+        test_socket.close()
+        return True
+
     @property
     def _cmd_id(self):
         """
@@ -259,18 +267,17 @@ class Bulb(object):
         if self._music_mode:
             return self._last_properties
 
-        requested_properties = [
-            "power", "bright", "ct", "rgb", "hue", "sat",
-            "color_mode", "flowing", "delayoff", "flow_params",
-            "music_on", "name"
-        ]
-        response = self.send_command("get_prop", requested_properties)
 
-        if self.blocking:
-            properties = response["result"]
-            properties = [x if x else None for x in properties]
+        response = self.send_command("get_prop", self.request_properties)
 
-            self._last_properties = dict(zip(requested_properties, properties))
+        # in non-blocking mode we dont receive usefull data
+        if not self.blocking:
+            return response
+
+        properties = response["result"]
+        properties = [x if x else None for x in properties]
+
+        self._last_properties = dict(zip(self.request_properties, properties))
 
         return self._last_properties
 
@@ -312,6 +319,8 @@ class Bulb(object):
         response = None
         while response is None:
             try:
+                # Ensure timeout is set to 5
+                self._socket.settimeout(5)
                 data = self._socket.recv(16 * 1024)
             except socket.error:
                 # An error occured, let's close and abort...
@@ -583,7 +592,7 @@ class Bulb(object):
         """
         assert self.blocking == False
 
-        if not ping(self._ip):
+        if not self.is_connected():
             self.__socket.close()
             self.__socket = None
             raise BulbException('A socket error occurred when receiving. Bulb is not reachable.')
@@ -606,7 +615,7 @@ class Bulb(object):
                 self.__socket = None
                 raise BulbException('A socket error occurred when receiving command. Bulb closed the connection.')
             else:
-                # got a message do something :)
+                # got a message
                 for line in data.split(b"\r\n"):
                     if not line:
                         continue
@@ -615,17 +624,12 @@ class Bulb(object):
                         _LOGGER.debug("%s < %s", self, line)
                     except ValueError:
                         line = {"result": ["invalid command"]}
-                    if "result" in line:
-                        if line["result"] == ["ok"]:
+                    if ("result" in line) and (len(line["result"]) == len(self.request_properties)):
+                        if line["result"] == "ok":
                             return line
-                        requested_properties = [
-                            "power", "bright", "ct", "rgb", "hue", "sat",
-                            "color_mode", "flowing", "delayoff", "flow_params",
-                            "music_on", "name"
-                        ]
                         properties = line["result"]
                         properties = [x if x else None for x in properties]
-                        self._last_properties = dict(zip(requested_properties, properties))
+                        self._last_properties = dict(zip(self.request_properties, properties))
                     elif line.get("method") == "props":
                         self._last_properties.update(line["params"])
                     return line
