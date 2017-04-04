@@ -199,6 +199,7 @@ class Bulb(object):
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.__socket.settimeout(5)
             self.__socket.connect((self._ip, self._port))
+            print self.__socket
         return self.__socket
 
     def ensure_on(self):
@@ -304,8 +305,9 @@ class Bulb(object):
         except socket.error as ex:
             # Some error occurred, remove this socket in hopes that we can later
             # create a new one.
-            self.__socket.close()
-            self.__socket = None
+            if self.__socket:
+                self.__socket.close()
+                self.__socket = None
             raise_from(BulbException('A socket error occurred when sending the command.'), ex)
 
         if self._music_mode:
@@ -324,8 +326,9 @@ class Bulb(object):
                 data = self._socket.recv(16 * 1024)
             except socket.error:
                 # An error occured, let's close and abort...
-                self.__socket.close()
-                self.__socket = None
+                if self.__socket:
+                    self.__socket.close()
+                    self.__socket = None
                 response = {"error": "Bulb closed the connection."}
                 break
 
@@ -527,7 +530,8 @@ class Bulb(object):
         s.settimeout(5)
         conn, _ = s.accept()
         s.close()  # Close the listening socket.
-        self.__socket.close()
+        if self.__socket:
+            self.__socket.close()
         self.__socket = conn
         self._music_mode = True
 
@@ -593,8 +597,9 @@ class Bulb(object):
         assert self.blocking == False
 
         if not self.is_connected():
-            self.__socket.close()
-            self.__socket = None
+            if self.__socket:
+                self.__socket.close()
+                self.__socket = None
             raise BulbException('A socket error occurred when receiving. Bulb is not reachable.')
 
         try:
@@ -605,14 +610,16 @@ class Bulb(object):
             return
         except socket.error as ex:
             # An error occured, let's close and abort...
-            self.__socket.close()
-            self.__socket = None
+            if self.__socket:
+                self.__socket.close()
+                self.__socket = None
             raise_from(BulbException('A socket error occurred when receiving command.'), ex)
         else:
             if len(data) == 0:
                 # Empty message means server closed the connection
-                self.__socket.close()
-                self.__socket = None
+                if self.__socket:
+                    self.__socket.close()
+                    self.__socket = None
                 raise BulbException('A socket error occurred when receiving command. Bulb closed the connection.')
             else:
                 # got a message
