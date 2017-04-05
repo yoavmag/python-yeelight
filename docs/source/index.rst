@@ -170,10 +170,10 @@ cost you an extra message per command, so watch out for rate-limiting::
 For documentation of the Flow feature, see :doc:`flow`.
 
 
-If you want to handle messages from the bulb by yourself (e.g. if you want to 
-recognize external changes to the bulb) you have to set the bulb to non-blocking 
-mode by passing ``blocking = False`` at bulb construction. Now you can run another 
-Thread calling :py:meth:`get() <yeelight.Bulb.get()>` in a while loop:
+If you want to handle messages from the bulb by yourself (e.g. if you want to
+recognize external changes to the bulb) you have to set the bulb to non-blocking
+mode by passing ``blocking = False`` at bulb construction. Now you can run another
+Thread calling :py:meth:`receive() <yeelight.Bulb.receive()>` in a while loop::
 
     from yeelight import Bulb
     from time import sleep

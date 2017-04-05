@@ -18,7 +18,6 @@ from .flow import Flow
 _LOGGER = logging.getLogger(__name__)
 
 
-
 @decorator
 def _command(f, *args, **kw):
     """A decorator that wraps a function and enables effects."""
@@ -164,19 +163,30 @@ class Bulb(object):
             "music_on", "name"
         ]
 
-    def is_connected(self):
+    def _close_socket(self):
+        """Closes the socket and set it to None without throwing an exception."""
+        if self.__socket:
+            self.__socket.close()
+            self.__socket = None
+
+    def is_connectable(self):
         """
-        Returns True if bulb responds to a connection request
+        Returns True if bulb responds to a connection request.
+
+        NOTE: Currently WiFi smart device support up to 4 simultaneous TCP connections, any further
+        connect attempt will be rejected.
+
+        :rtype: bool
         """
         try:
             test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             test_socket.settimeout(5)
             test_socket.connect((self._ip, self._port))
         except socket.timeout as ex:
-            # Timeout -> its likley that bulb is offline
+            logging.debug("Socket error trying to connect", exc_info=1)
             return False
         except socket.error as ex:
-            # What if an error occures? Raise exception or return False?
+            logging.debug("Socket error trying to connect", exc_info=1)
             return False
 
         test_socket.close()
@@ -199,7 +209,6 @@ class Bulb(object):
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.__socket.settimeout(5)
             self.__socket.connect((self._ip, self._port))
-            print self.__socket
         return self.__socket
 
     def ensure_on(self):
@@ -260,6 +269,9 @@ class Bulb(object):
 
         This method also updates ``last_properties`` when it is called.
 
+        NOTE: In non-blocking Mode this function will updates ``last_properties``
+        and returns "ok"
+
         :returns: A dictionary of param: value items.
         :rtype: dict
         """
@@ -271,9 +283,10 @@ class Bulb(object):
 
         response = self.send_command("get_prop", self.request_properties)
 
-        # in non-blocking mode we dont receive usefull data
+        # in non-blocking mode we dont receive data
         if not self.blocking:
-            return response
+            result = response.get("result", [None])
+            return result[0]
 
         properties = response["result"]
         properties = [x if x else None for x in properties]
@@ -326,9 +339,7 @@ class Bulb(object):
                 data = self._socket.recv(16 * 1024)
             except socket.error:
                 # An error occured, let's close and abort...
-                if self.__socket:
-                    self.__socket.close()
-                    self.__socket = None
+                self._close_socket()
                 response = {"error": "Bulb closed the connection."}
                 break
 
@@ -545,9 +556,7 @@ class Bulb(object):
         Stopping music mode will close the previous connection. Calling
         ``stop_music`` more than once, or while not in music mode, is safe.
         """
-        if self.__socket:
-            self.__socket.close()
-            self.__socket = None
+        self._close_socket()
         self._music_mode = False
         return "set_music", [0]
 
@@ -587,19 +596,19 @@ class Bulb(object):
 
     def receive(self, timeout=0.1):
         """
-        Return the next message sent by the Bulb, or, after ``timeout`` has passed,
+        Return the next pending message sent by the Bulb, or, after ``timeout`` has passed,
         return ``None``. Needs blocking set to ``False`` on construction.
 
         :param int timeout: How many seconds to wait for replies.
 
         :raises BulbException: When the bulb indicates an error condition.
+
+        :rtype: str
         """
         assert self.blocking == False
 
-        if not self.is_connected():
-            if self.__socket:
-                self.__socket.close()
-                self.__socket = None
+        if not self.is_connectable():
+            self._close_socket()
             raise BulbException('A socket error occurred when receiving. Bulb is not reachable.')
 
         try:
@@ -607,19 +616,15 @@ class Bulb(object):
             data = self._socket.recv(16 * 1024)
             self._socket.settimeout(5)
         except socket.timeout as ex:
-            return
+            return None
         except socket.error as ex:
             # An error occured, let's close and abort...
-            if self.__socket:
-                self.__socket.close()
-                self.__socket = None
+            self._close_socket()
             raise_from(BulbException('A socket error occurred when receiving command.'), ex)
         else:
             if len(data) == 0:
                 # Empty message means server closed the connection
-                if self.__socket:
-                    self.__socket.close()
-                    self.__socket = None
+                self._close_socket()
                 raise BulbException('A socket error occurred when receiving command. Bulb closed the connection.')
             else:
                 # got a message
@@ -631,8 +636,8 @@ class Bulb(object):
                         _LOGGER.debug("%s < %s", self, line)
                     except ValueError:
                         line = {"result": ["invalid command"]}
-                    if ("result" in line) and (len(line["result"]) == len(self.request_properties)):
-                        if line["result"] == "ok":
+                    if "result" in line:
+                        if line["result"] == ["ok"]:
                             return line
                         properties = line["result"]
                         properties = [x if x else None for x in properties]
