@@ -6,7 +6,7 @@ from .main import _clamp
 import random
 
 
-def disco(bpm=120, brightness=100):
+def disco(bpm=120):
     """
     Color changes to the beat.
 
@@ -44,7 +44,7 @@ def temp():
     return transitions
 
 
-def strobe(brightness=100):
+def strobe():
     """
     Rapid flashing on and off.
 
@@ -242,7 +242,7 @@ def slowdown(duration=2000, brightness=100):
     return transitions
 
 
-def pulse(red, green, blue, duration=250, brightness=100):
+def pulse(red, green, blue, duration=250):
     """
     Pulse a single color once (mainly to be used for notifications).
 
@@ -250,7 +250,6 @@ def pulse(red, green, blue, duration=250, brightness=100):
     :param int green: The green color component to pulse (0-255).
     :param int blue: The blue color component to pulse (0-255).
     :param int duration: The duration to pulse for, in milliseconds.
-    :param int brightness: The brightness of the transition.
 
     :returns: A list of transitions.
     :rtype: list
@@ -260,8 +259,7 @@ def pulse(red, green, blue, duration=250, brightness=100):
     blue = _clamp(blue, 0, 255)
 
     transitions = [
-        RGBTransition(red, green, blue, duration=duration,
-                      brightness=brightness),
+        RGBTransition(red, green, blue, duration=duration),
         RGBTransition(red, green, blue, duration=duration, brightness=1),
     ]
     return transitions
