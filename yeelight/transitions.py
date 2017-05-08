@@ -11,7 +11,6 @@ def disco(bpm=120):
     Color changes to the beat.
 
     :param int bpm: The beats per minute to pulse to.
-    :param int brightness: The brightness of the transition.
 
     :returns: A list of transitions.
     :rtype: list
@@ -47,8 +46,6 @@ def temp():
 def strobe():
     """
     Rapid flashing on and off.
-
-    :param int brightness: The brightness of the transition.
 
     :returns: A list of transitions.
     :rtype: list
