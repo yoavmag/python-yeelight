@@ -2,7 +2,7 @@
 
 from .flow import HSVTransition, RGBTransition,\
                   TemperatureTransition, SleepTransition
-from .main import _clamp
+from .utils import _clamp
 import random
 
 
@@ -53,6 +53,30 @@ def strobe():
     transitions = [
         HSVTransition(0, 0, duration=50, brightness=100),
         HSVTransition(0, 0, duration=50, brightness=1),
+    ]
+    return transitions
+
+
+def pulse(red, green, blue, duration=250, brightness=100):
+    """
+    Pulse a single color once (mainly to be used for notifications).
+
+    :param int red: The red color component to pulse (0-255).
+    :param int green: The green color component to pulse (0-255).
+    :param int blue: The blue color component to pulse (0-255).
+    :param int duration: The duration to pulse for, in milliseconds.
+    :param int brightness: The brightness to pulse at (1-100).
+
+    :returns: A list of transitions.
+    :rtype: list
+    """
+    red = _clamp(red, 0, 255)
+    green = _clamp(green, 0, 255)
+    blue = _clamp(blue, 0, 255)
+
+    transitions = [
+        RGBTransition(red, green, blue, duration=duration, brightness=brightness),
+        RGBTransition(red, green, blue, duration=duration, brightness=1),
     ]
     return transitions
 
@@ -112,7 +136,7 @@ def police(duration=300, brightness=100):
 
 def police2(duration=250, brightness=100):
     """
-    Color changes from red to green to blue.
+    Color flashes red and then blue, like urgent police lights.
 
     :param int duration: The duration to fade to next color, in milliseconds.
     :param int brightness: The brightness of the transition.
@@ -139,7 +163,7 @@ def christmas(duration=250, brightness=100, sleep=3000):
 
     :param int duration: The duration between red and green, in milliseconds.
     :param int brightness: The brightness of the transition.
-    :param int sleep: The time to sleep between colors, in milliseconds
+    :param int sleep: The time to sleep between colors, in milliseconds.
 
     :returns: A list of transitions.
     :rtype: list
@@ -175,88 +199,35 @@ def rgb(duration=250, brightness=100, sleep=3000):
     return transitions
 
 
-def randomloop(duration=750, brightness=100):
+def randomloop(duration=750, brightness=100, count=9):
     """
-    Color changes between 9 randomly chosen colors.
+    Color changes between 9 randomly chosen colors Or less if specified.
 
     :param int duration: The duration to fade to next color, in milliseconds.
     :param int brightness: The brightness of the transition.
+    :param int count: The number of random chosen colors in transition.
 
     :returns: A list of transitions.
     :rtype: list
     """
-    transitions = [
-        HSVTransition(random.randint(0, 360), 100, duration=duration,
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=duration,
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=duration,
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=duration,
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=duration,
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=duration,
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=duration,
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=duration,
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=duration,
-                      brightness=brightness),
-    ]
+    count = _clamp(count, 1, 9)
+    transitions = [HSVTransition(random.randint(0, 360), 100,
+                   duration=duration) for _ in range(count)]
     return transitions
 
 
-def slowdown(duration=2000, brightness=100):
+def slowdown(duration=2000, brightness=100, count=8):
     """
     Changes between 8 random chosen colors with increasing transition time.
 
     :param int duration: The duration to fade to next color, in milliseconds.
     :param int brightness: The brightness of the transition.
+    :param int count: The number of random chosen colors in transition.
 
     :returns: A list of transitions.
     :rtype: list
     """
-    transitions = [
-        HSVTransition(random.randint(0, 360), 100, duration=duration,
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=(int(duration)*2),
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=(int(duration)*3),
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=(int(duration)*4),
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=(int(duration)*5),
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=(int(duration)*6),
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=(int(duration)*7),
-                      brightness=brightness),
-        HSVTransition(random.randint(0, 360), 100, duration=(int(duration)*8),
-                      brightness=brightness),
-    ]
-    return transitions
-
-
-def pulse(red, green, blue, duration=250):
-    """
-    Pulse a single color once (mainly to be used for notifications).
-
-    :param int red: The red color component to pulse (0-255).
-    :param int green: The green color component to pulse (0-255).
-    :param int blue: The blue color component to pulse (0-255).
-    :param int duration: The duration to pulse for, in milliseconds.
-
-    :returns: A list of transitions.
-    :rtype: list
-    """
-    red = _clamp(red, 0, 255)
-    green = _clamp(green, 0, 255)
-    blue = _clamp(blue, 0, 255)
-
-    transitions = [
-        RGBTransition(red, green, blue, duration=duration),
-        RGBTransition(red, green, blue, duration=duration, brightness=1),
-    ]
+    count = _clamp(count, 1, 8)
+    transitions = [HSVTransition(random.randint(0, 360), 100,
+                   duration=(duration*x)) for x in range(1, count+1)]
     return transitions
