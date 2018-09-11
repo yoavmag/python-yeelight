@@ -1,7 +1,7 @@
 import colorsys
+import fcntl
 import json
 import logging
-import os
 import socket
 import struct
 from enum import Enum
@@ -12,12 +12,6 @@ from .decorator import decorator
 from .enums import PowerMode
 from .flow import Flow
 from .utils import _clamp
-
-if os.name == "nt":
-    import win32api as fcntl
-else:
-    import fcntl
-
 
 try:
     from urllib.parse import urlparse
@@ -72,7 +66,7 @@ def _command(f, *args, **kw):
         # Add the effect parameters.
         params += [effect, duration]
         # Add power_mode parameter.
-        if method == "set_power" and params[0] == "on" and power_mode.value != PowerMode.LAST:
+        if method == "set_power" and params[0] == "on":
             params += [power_mode.value]
 
     result = self.send_command(method, params).get("result", [])
@@ -90,9 +84,7 @@ def get_ip_address(ifname):
 
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return socket.inet_ntoa(
-        fcntl.ioctl(s.fileno(), 0x8915, struct.pack("256s", bytes(ifname[:15], "utf-8")))[20:24]
-    )  # SIOCGIFADDR
+    return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack("256s", ifname[:15]))[20:24])  # SIOCGIFADDR
 
 
 def discover_bulbs(timeout=2, interface=False):
@@ -111,7 +103,7 @@ def discover_bulbs(timeout=2, interface=False):
     :returns: A list of dictionaries, containing the ip, port and capabilities
               of each of the bulbs in the network.
     """
-    msg = "\r\n".join(["M-SEARCH * HTTP/1.1", "HOST: 239.255.255.250:1982", 'MAN: "ssdp:discover"', "ST: wifi_bulb"])
+    msg = "M-SEARCH * HTTP/1.1\r\n" "ST:wifi_bulb\r\n" 'MAN:"ssdp:discover"\r\n'
 
     # Set up UDP socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -265,12 +257,13 @@ class Bulb(object):
         :rtype: yeelight.BulbType
         :return: The bulb's type.
         """
-        if not self._last_properties or any(name not in self.last_properties for name in ["ct", "rgb"]):
+        if not self._last_properties:
             return BulbType.Unknown
-        if self.last_properties["rgb"] is None and self.last_properties["ct"]:
+        if self._last_properties["rgb"] is None and self._last_properties["ct"]:
             return BulbType.WhiteTemp
         if all(
-            name in self.last_properties and self.last_properties[name] is None for name in ["ct", "rgb", "hue", "sat"]
+            name in self._last_properties and self._last_properties[name] is None
+            for name in ["ct", "rgb", "hue", "sat"]
         ):
             return BulbType.White
         else:
@@ -521,7 +514,7 @@ class Bulb(object):
 
         self.ensure_on()
 
-        return ("start_cf", [flow.count * len(flow.transitions), flow.action.value, flow.expression])
+        return "start_cf", [flow.count * len(flow.transitions), flow.action.value, flow.expression]
 
     @_command
     def stop_flow(self):
