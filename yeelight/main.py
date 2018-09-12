@@ -299,6 +299,7 @@ class Bulb(object):
             "flowing",
             "delayoff",
             "music_on",
+            "active_mode",
             "name",
         ],
     ):
@@ -467,6 +468,23 @@ class Bulb(object):
             red, green, blue = [int(round(col * 255)) for col in colorsys.hsv_to_rgb(hue, saturation, 1)]
             rgb = red * 65536 + green * 256 + blue
             return "start_cf", [1, 1, "%s, 1, %s, %s" % (duration, rgb, value)]
+
+    def get_brightness(self):
+        """
+        Get the bulb's current brightness.
+
+        :returns: The brightness value currently set (1-100), or zero if the light is off.
+        """
+        props = self.get_properties(["power", "bright", "active_mode", "nl_br"])
+
+        if props["power"] == "off":
+            return "0"
+
+        if props["active_mode"] == "1":
+            # Night light is on
+            return props["nl_br"]
+        else:
+            return props["bright"]
 
     @_command
     def set_brightness(self, brightness, **kwargs):
