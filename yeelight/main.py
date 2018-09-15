@@ -331,6 +331,16 @@ class Bulb(object):
         properties = [x if x else None for x in properties]
 
         self._last_properties = dict(zip(requested_properties, properties))
+
+        if self._last_properties["power"] == "off":
+            self._last_properties["current_brightness"] = "0"
+        else:
+            if self._last_properties["active_mode"] == "1":
+                self._last_properties["current_brightness"] = self._last_properties["nl_br"]
+            else:
+                if self._last_properties["bright"] is not None:
+                    self._last_properties["current_brightness"] = self._last_properties["bright"]
+
         return self._last_properties
 
     def send_command(self, method, params=None):
