@@ -341,11 +341,9 @@ class Bulb(object):
             cb = "0"
         elif self._last_properties.get("active_mode") == "1":
             # Nightlight mode.
-            cb = self._last_properties["nl_br"]
-        elif self._last_properties.get("bright") is not None:
-            cb = self._last_properties["bright"]
+            cb = self._last_properties.get("nl_br")
         else:
-            cb = None
+            cb = self._last_properties.get("bright")
         self._last_properties["current_brightness"] = cb
 
         return self._last_properties
