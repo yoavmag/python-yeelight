@@ -520,7 +520,12 @@ class Bulb(object):
 
     @_command
     def set_default(self):
-        """Set the bulb's current state as default."""
+        """
+        Set the bulb's current state as the default, which is what the bulb will be set to on power on.
+
+        If you get a "general error" setting this, yet the bulb reports as supporting `set_default` during
+        discovery, disable "auto save settings" in the YeeLight app.
+        """
         return "set_default", []
 
     @_command
