@@ -167,7 +167,7 @@ class BulbType(Enum):
     White = 0
     Color = 1
     WhiteTemp = 2
-    WhiteTempMood = 2
+    WhiteTempMood = 3
 
 
 class Bulb(object):
@@ -514,9 +514,24 @@ class Bulb(object):
         return "set_power", ["off"]
 
     @_command
+    def turn_bg_on(self, **kwargs):
+        """Turn the background light on."""
+        return "bg_set_power", ["on"]
+
+    @_command
+    def turn_bg_off(self, **kwargs):
+        """Turn the background light off."""
+        return "bg_set_power", ["off"]
+
+    @_command
     def toggle(self, **kwargs):
         """Toggle the bulb on or off."""
         return "toggle", []
+
+    @_command
+    def bg_toggle(self, **kwargs):
+        """Toggle the background light on or off."""
+        return "bg_toggle", []
 
     @_command
     def set_default(self):
