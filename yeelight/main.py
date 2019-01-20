@@ -75,6 +75,15 @@ def _command(f, *args, **kw):
         if method == "set_power" and params[0] == "on" and power_mode.value != PowerMode.LAST:
             params += [power_mode.value]
 
+    if method == "set_music":
+        try:
+            result = self.send_command(method, params).get("result", [])
+            if result:
+                return result[0]
+        except Exception as e:
+            _LOGGER.debug(e)
+            return
+
     result = self.send_command(method, params).get("result", [])
     if result:
         return result[0]
