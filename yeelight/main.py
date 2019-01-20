@@ -75,15 +75,6 @@ def _command(f, *args, **kw):
         if method == "set_power" and params[0] == "on" and power_mode.value != PowerMode.LAST:
             params += [power_mode.value]
 
-    if method == "set_music":
-        try:
-            result = self.send_command(method, params).get("result", [])
-            if result:
-                return result[0]
-        except Exception as e:
-            _LOGGER.debug(e)
-            return
-
     result = self.send_command(method, params).get("result", [])
     if result:
         return result[0]
@@ -412,6 +403,12 @@ class Bulb(object):
                     response = line
                 else:
                     self._last_properties.update(line["params"])
+
+        if method == "set_music" and params == [0] and "error" in response and response["error"]["code"] == -5000:
+            # The bulb seems to throw an error for no reason when stopping music mode,
+            # it doesn't affect operation and we can't do anything about it, so we might
+            # as well swallow it.
+            return {"id": 1, "result": ["ok"]}
 
         if "error" in response:
             raise BulbException(response["error"])
