@@ -84,9 +84,14 @@ def _command(f, *args, **kw):
             _LOGGER.debug(e)
             return
 
-    result = self.send_command(method, params).get("result", [])
-    if result:
-        return result[0]
+    try:
+        result = self.send_command(method, params).get("result", [])
+    except:
+        if method != "set_music":
+            raise
+    else:
+        if result:
+            return result[0]
 
 
 def get_ip_address(ifname):
