@@ -595,10 +595,7 @@ class Bulb(object):
         host, port = s.getsockname()
         s.listen(3)
 
-        if ip:
-            local_ip = ip
-        else:
-            local_ip = self._socket.getsockname()[0]
+        local_ip = ip if ip else self._socket.getsockname()[0]
         self.send_command("set_music", [1, local_ip, port])
         s.settimeout(5)
         conn, _ = s.accept()
