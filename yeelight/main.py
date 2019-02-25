@@ -27,17 +27,17 @@ except ImportError:
 _LOGGER = logging.getLogger(__name__)
 
 _MODEL_SPECS = {
-    "mono": {"color_temp": {"min": 2700, "max": 2700}},
-    "mono1": {"color_temp": {"min": 2700, "max": 2700}},
-    "color": {"color_temp": {"min": 1700, "max": 6500}},
-    "color1": {"color_temp": {"min": 1700, "max": 6500}},
-    "strip1": {"color_temp": {"min": 1700, "max": 6500}},
-    "bslamp1": {"color_temp": {"min": 1700, "max": 6500}},
-    "ceiling1": {"color_temp": {"min": 2700, "max": 6500}},
-    "ceiling2": {"color_temp": {"min": 2700, "max": 6500}},
-    "ceiling3": {"color_temp": {"min": 2700, "max": 6000}},
-    "ceiling4": {"color_temp": {"min": 2700, "max": 6500}},
-    "color2": {"color_temp": {"min": 2700, "max": 6500}},
+    "mono": {"color_temp": {"min": 2700, "max": 2700}, "nightlight": False},
+    "mono1": {"color_temp": {"min": 2700, "max": 2700}, "nightlight": False},
+    "color": {"color_temp": {"min": 1700, "max": 6500}, "nightlight": False},
+    "color1": {"color_temp": {"min": 1700, "max": 6500}, "nightlight": False},
+    "strip1": {"color_temp": {"min": 1700, "max": 6500}, "nightlight": False},
+    "bslamp1": {"color_temp": {"min": 1700, "max": 6500}, "nightlight": False},
+    "ceiling1": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": False},
+    "ceiling2": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": False},
+    "ceiling3": {"color_temp": {"min": 2700, "max": 6000}, "nightlight": True},
+    "ceiling4": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": True},
+    "color2": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": False},
 }
 
 
