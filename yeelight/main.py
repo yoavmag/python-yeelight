@@ -4,12 +4,11 @@ import logging
 import os
 import socket
 import struct
-from enum import Enum
 
 from future.utils import raise_from
 
 from .decorator import decorator
-from .enums import PowerMode
+from .enums import BulbType, LightType, PowerMode
 from .flow import Flow
 from .utils import _clamp
 
@@ -49,21 +48,53 @@ def _command(f, *args, **kw):
     duration = kw.get("duration", self.duration)
     power_mode = kw.get("power_mode", self.power_mode)
 
-    method, params = f(*args, **kw)
-    if method in ["set_ct_abx", "set_rgb", "set_hsv", "set_bright", "set_power", "toggle"]:
+    method, params, kwargs = f(*args, **kw)
+
+    light_type = kwargs.get("light_type", LightType.Main)
+
+    # Prepend the control for different bulbs
+    if light_type == LightType.Ambient:
+        method = "bg_" + method
+
+    if method in [
+        "set_ct_abx",
+        "set_rgb",
+        "set_hsv",
+        "set_bright",
+        "set_power",
+        "toggle",
+        "bg_set_ct_abx",
+        "bg_set_rgb",
+        "bg_set_hsv",
+        "bg_set_bright",
+        "bg_set_power",
+        "bg_toggle",
+    ]:
         if self._music_mode:
             # Mapping calls to their properties.
             # Used to keep music mode cache up to date.
             action_property_map = {
                 "set_ct_abx": ["ct"],
+                "bg_set_ct_abx": ["bg_ct"],
                 "set_rgb": ["rgb"],
+                "bg_set_rgb": ["bg_rgb"],
                 "set_hsv": ["hue", "sat"],
+                "bg_set_hsv": ["bg_hue", "bg_sat"],
                 "set_bright": ["bright"],
+                "bg_set_bright": ["bg_bright"],
                 "set_power": ["power"],
+                "bg_set_power": ["bg_power"],
             }
             # Handle toggling separately, as it depends on a previous power state.
             if method == "toggle":
                 self._last_properties["power"] = "on" if self._last_properties["power"] == "off" else "off"
+            if method == "bg_toggle":
+                self._last_properties["bg_power"] = "on" if self._last_properties["bg_power"] == "off" else "off"
+            # dev_toggle toggle both lights depending on the MAIN light power status.
+            if method == "dev_toggle":
+                new_state = "on" if self._last_properties["power"] == "off" else "off"
+                self._last_properties["power"] = new_state
+                self._last_properties["bg_power"] = new_state
             elif method in action_property_map:
                 set_prop = action_property_map[method]
                 update_props = {set_prop[prop]: params[prop] for prop in range(len(set_prop))}
@@ -73,6 +104,8 @@ def _command(f, *args, **kw):
         params += [effect, duration]
         # Add power_mode parameter.
         if method == "set_power" and params[0] == "on" and power_mode.value != PowerMode.LAST:
+            params += [power_mode.value]
+        if method == "bg_set_power" and params[0] == "on" and power_mode.value != PowerMode.LAST:
             params += [power_mode.value]
 
     result = self.send_command(method, params).get("result", [])
@@ -152,22 +185,6 @@ class BulbException(Exception):
     """
 
     pass
-
-
-class BulbType(Enum):
-    """
-    The bulb's type.
-
-    This is either `White` (for monochrome bulbs), `Color` (for color bulbs), `WhiteTemp` (for white bulbs with
-    configurable color temperature), `WhiteTempMood` for white bulbs with mood lighting (like the Galaxy LED ceiling
-    light), or `Unknown` if the properties have not been fetched yet.
-    """
-
-    Unknown = -1
-    White = 0
-    Color = 1
-    WhiteTemp = 2
-    WhiteTempMood = 2
 
 
 class Bulb(object):
@@ -259,12 +276,12 @@ class Bulb(object):
         """
         The type of bulb we're communicating with.
 
-        Returns a :py:class:`BulbType <yeelight.BulbType>` describing the bulb
+        Returns a :py:class:`BulbType <yeelight.enums.BulbType>` describing the bulb
         type.
 
         When trying to access before properties are known, the bulb type is unknown.
 
-        :rtype: yeelight.BulbType
+        :rtype: yeelight.enums.BulbType
         :return: The bulb's type.
         """
         if not self._last_properties or any(name not in self.last_properties for name in ["ct", "rgb"]):
@@ -304,11 +321,16 @@ class Bulb(object):
             "flowing",
             "delayoff",
             "music_on",
+            "name",
+            "bg_power",
+            "bg_flowing",
+            "bg_ct",
+            "bg_bright",
+            "bg_hue",
+            "bg_sat",
+            "bg_rgb",
             "nl_br",
             "active_mode",
-            "bg_power",
-            "bg_rgb",
-            "name",
         ],
     ):
         """
@@ -338,6 +360,8 @@ class Bulb(object):
         self._last_properties = dict(zip(requested_properties, properties))
 
         if self._last_properties.get("power") == "off":
+            cb = "0"
+        if self._last_properties.get("bg_power") == "off":
             cb = "0"
         elif self._last_properties.get("active_mode") == "1":
             # Nightlight mode.
@@ -416,33 +440,36 @@ class Bulb(object):
         return response
 
     @_command
-    def set_color_temp(self, degrees, **kwargs):
+    def set_color_temp(self, degrees, light_type=LightType.Main, **kwargs):
         """
         Set the bulb's color temperature.
 
         :param int degrees: The degrees to set the color temperature to
                             (1700-6500).
+        :param yeelight.enums.LightType light_type: Light type to control.
         """
         self.ensure_on()
 
         degrees = _clamp(degrees, 1700, 6500)
-        return "set_ct_abx", [degrees]
+        return "set_ct_abx", [degrees], dict(kwargs, light_type=light_type)
 
     @_command
-    def set_rgb(self, red, green, blue, **kwargs):
+    def set_rgb(self, red, green, blue, light_type=LightType.Main, **kwargs):
         """
         Set the bulb's RGB value.
 
-        :param int red: The red value to set (0-255).
+        :param int red:   The red value to set (0-255).
         :param int green: The green value to set (0-255).
-        :param int blue: The blue value to set (0-255).
+        :param int blue:  The blue value to set (0-255).
+        :param yeelight.enums.LightType light_type:
+                          Light type to control.
         """
         self.ensure_on()
 
         red = _clamp(red, 0, 255)
         green = _clamp(green, 0, 255)
         blue = _clamp(blue, 0, 255)
-        return "set_rgb", [red * 65536 + green * 256 + blue]
+        return "set_rgb", [red * 65536 + green * 256 + blue], dict(kwargs, light_type=light_type)
 
     @_command
     def set_adjust(self, action, prop, **kwargs):
@@ -460,10 +487,10 @@ class Bulb(object):
                            for color. The only action for "color" can be
                            "circle". Why? Who knows.
         """
-        return "set_adjust", [action, prop]
+        return "set_adjust", [action, prop], kwargs
 
     @_command
-    def set_hsv(self, hue, saturation, value=None, **kwargs):
+    def set_hsv(self, hue, saturation, value=None, light_type=LightType.Main, **kwargs):
         """
         Set the bulb's HSV value.
 
@@ -472,6 +499,7 @@ class Bulb(object):
         :param int value:      The value to set (0-100). If omitted, the bulb's
                                brightness will remain the same as before the
                                change.
+        :param yeelight.enums.LightType light_type: Light type to control.
         """
         self.ensure_on()
 
@@ -481,7 +509,7 @@ class Bulb(object):
 
         if value is None:
             # If no value was passed, use ``set_hsv`` to preserve luminance.
-            return "set_hsv", [hue, saturation]
+            return "set_hsv", [hue, saturation], dict(kwargs, light_type=light_type)
         else:
             # Otherwise, use flow.
             value = _clamp(value, 0, 100)
@@ -495,56 +523,77 @@ class Bulb(object):
             saturation = _clamp(saturation, 0, 100) / 100.0
             red, green, blue = [int(round(col * 255)) for col in colorsys.hsv_to_rgb(hue, saturation, 1)]
             rgb = red * 65536 + green * 256 + blue
-            return "start_cf", [1, 1, "%s, 1, %s, %s" % (duration, rgb, value)]
+            return "start_cf", [1, 1, "%s, 1, %s, %s" % (duration, rgb, value)], dict(kwargs, light_type=light_type)
 
     @_command
-    def set_brightness(self, brightness, **kwargs):
+    def set_brightness(self, brightness, light_type=LightType.Main, **kwargs):
         """
         Set the bulb's brightness.
 
         :param int brightness: The brightness value to set (1-100).
+        :param yeelight.enums.LightType light_type: Light type to control.
         """
         self.ensure_on()
 
         brightness = _clamp(brightness, 1, 100)
-        return "set_bright", [brightness]
+        return "set_bright", [brightness], dict(kwargs, light_type=light_type)
 
     @_command
-    def turn_on(self, **kwargs):
-        """Turn the bulb on."""
-        return "set_power", ["on"]
+    def turn_on(self, light_type=LightType.Main, **kwargs):
+        """
+        Turn the bulb on.
+
+        :param yeelight.enums.LightType light_type: Light type to control.
+        """
+
+        return "set_power", ["on"], dict(kwargs, light_type=light_type)
 
     @_command
-    def turn_off(self, **kwargs):
-        """Turn the bulb off."""
-        return "set_power", ["off"]
+    def turn_off(self, light_type=LightType.Main, **kwargs):
+        """
+        Turn the bulb off.
+
+        :param yeelight.enums.LightType light_type: Light type to control.
+        """
+        return "set_power", ["off"], dict(kwargs, light_type=light_type)
 
     @_command
-    def toggle(self, **kwargs):
-        """Toggle the bulb on or off."""
-        return "toggle", []
+    def toggle(self, light_type=LightType.Main, **kwargs):
+        """
+        Toggle the bulb on or off.
+
+        :param yeelight.enums.LightType light_type: Light type to control.
+        """
+        return "toggle", [], dict(kwargs, light_type=light_type)
 
     @_command
-    def set_default(self):
+    def dev_toggle(self, **kwargs):
+        """Toggle the main light and the ambient on or off."""
+        return "dev_toggle", [], kwargs
+
+    @_command
+    def set_default(self, light_type=LightType.Main, **kwargs):
         """
         Set the bulb's current state as the default, which is what the bulb will be set to on power on.
 
         If you get a "general error" setting this, yet the bulb reports as supporting `set_default` during
         discovery, disable "auto save settings" in the YeeLight app.
+
+        :param yeelight.enums.LightType light_type: Light type to control.
         """
-        return "set_default", []
+        return "set_default", [], dict(kwargs, light_type=light_type)
 
     @_command
-    def set_name(self, name):
+    def set_name(self, name, **kwargs):
         """
         Set the bulb's name.
 
         :param str name: The string you want to set as the bulb's name.
         """
-        return "set_name", [name]
+        return "set_name", [name], kwargs
 
     @_command
-    def start_flow(self, flow):
+    def start_flow(self, flow, light_type=LightType.Main, **kwargs):
         """
         Start a flow.
 
@@ -555,12 +604,20 @@ class Bulb(object):
 
         self.ensure_on()
 
-        return ("start_cf", [flow.count * len(flow.transitions), flow.action.value, flow.expression])
+        return (
+            "start_cf",
+            [flow.count * len(flow.transitions), flow.action.value, flow.expression],
+            dict(kwargs, light_type=light_type),
+        )
 
     @_command
-    def stop_flow(self):
-        """Stop a flow."""
-        return "stop_cf", []
+    def stop_flow(self, light_type=LightType.Main, **kwargs):
+        """
+        Stop a flow.
+
+        :param yeelight.enums.LightType light_type: Light type to control.
+        """
+        return "stop_cf", [], dict(kwargs, light_type=light_type)
 
     def start_music(self, port=0, ip=None):
         """
@@ -607,7 +664,7 @@ class Bulb(object):
         return "ok"
 
     @_command
-    def stop_music(self):
+    def stop_music(self, **kwargs):
         """
         Stop music mode.
 
@@ -618,10 +675,10 @@ class Bulb(object):
             self.__socket.close()
             self.__socket = None
         self._music_mode = False
-        return "set_music", [0]
+        return "set_music", [0], kwargs
 
     @_command
-    def cron_add(self, event_type, value):
+    def cron_add(self, event_type, value, **kwargs):
         """
         Add an event to cron.
 
@@ -632,27 +689,27 @@ class Bulb(object):
         :param yeelight.enums.CronType event_type: The type of event. Currently,
                                                    only ``CronType.off``.
         """
-        return "cron_add", [event_type.value, value]
+        return "cron_add", [event_type.value, value], kwargs
 
     @_command
-    def cron_get(self, event_type):
+    def cron_get(self, event_type, **kwargs):
         """
         Retrieve an event from cron.
 
         :param yeelight.enums.CronType event_type: The type of event. Currently,
                                                    only ``CronType.off``.
         """
-        return "cron_get", [event_type.value]
+        return "cron_get", [event_type.value], kwargs
 
     @_command
-    def cron_del(self, event_type):
+    def cron_del(self, event_type, **kwargs):
         """
         Remove an event from cron.
 
         :param yeelight.enums.CronType event_type: The type of event. Currently,
                                                    only ``CronType.off``.
         """
-        return "cron_del", [event_type.value]
+        return "cron_del", [event_type.value], kwargs
 
     def __repr__(self):
         return "Bulb<{ip}:{port}, type={type}>".format(ip=self._ip, port=self._port, type=self.bulb_type)
@@ -663,7 +720,7 @@ class Bulb(object):
 
         If the light is off it will be turned on.
 
-        :param yeelight.enums.PowerMode mode: The mode to swith to.
+        :param yeelight.enums.PowerMode mode: The mode to switch to.
         """
         return self.turn_on(power_mode=mode)
 
@@ -680,6 +737,9 @@ class Bulb(object):
 
         if self.bulb_type is BulbType.WhiteTemp:
             return _MODEL_SPECS["ceiling1"]
+
+        if self.bulb_type is BulbType.WhiteTempMood:
+            return _MODEL_SPECS["ceiling4"]
 
         # BulbType.Color and BulbType.Unknown
         return _MODEL_SPECS["color"]
