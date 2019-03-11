@@ -26,17 +26,17 @@ except ImportError:
 _LOGGER = logging.getLogger(__name__)
 
 _MODEL_SPECS = {
-    "mono": {"color_temp": {"min": 2700, "max": 2700}, "nightlight": False},
-    "mono1": {"color_temp": {"min": 2700, "max": 2700}, "nightlight": False},
-    "color": {"color_temp": {"min": 1700, "max": 6500}, "nightlight": False},
-    "color1": {"color_temp": {"min": 1700, "max": 6500}, "nightlight": False},
-    "strip1": {"color_temp": {"min": 1700, "max": 6500}, "nightlight": False},
-    "bslamp1": {"color_temp": {"min": 1700, "max": 6500}, "nightlight": False},
-    "ceiling1": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": False},
-    "ceiling2": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": False},
-    "ceiling3": {"color_temp": {"min": 2700, "max": 6000}, "nightlight": True},
-    "ceiling4": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": True},
-    "color2": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": False},
+    "mono": {"color_temp": {"min": 2700, "max": 2700}, "night_light": False, "background_light": False},
+    "mono1": {"color_temp": {"min": 2700, "max": 2700}, "night_light": False, "background_light": False},
+    "color": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
+    "color1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
+    "strip1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
+    "bslamp1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
+    "ceiling1": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
+    "ceiling2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
+    "ceiling3": {"color_temp": {"min": 2700, "max": 6000}, "night_light": True, "background_light": False},
+    "ceiling4": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": True},
+    "color2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
 }
 
 
