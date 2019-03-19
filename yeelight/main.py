@@ -15,13 +15,13 @@ from .utils import _clamp
 if os.name == "nt":
     import win32api as fcntl
 else:
-    import fcntl
+    import fcntl  # type: ignore
 
 
 try:
     from urllib.parse import urlparse
 except ImportError:
-    from urlparse import urlparse
+    from urlparse import urlparse  # type: ignore
 
 _LOGGER = logging.getLogger(__name__)
 
