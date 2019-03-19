@@ -1,5 +1,6 @@
 # #########################     LICENSE     ############################ #
 # flake8: noqa
+# type: ignore
 
 # Copyright (c) 2005-2016, Michele Simionato
 # All rights reserved.
@@ -44,7 +45,7 @@ import sys
 __version__ = "4.0.10"
 
 if sys.version >= "3":
-    from inspect import getfullargspec
+    from inspect import getfullargspec  # type: ignore
 
     def get_init(cls):
         return cls.__init__
@@ -52,7 +53,7 @@ if sys.version >= "3":
 
 else:
 
-    class getfullargspec(object):
+    class getfullargspec(object):  # type: ignore
         "A quick and dirty replacement for getfullargspec for Python 2.X"
 
         def __init__(self, f):
@@ -268,7 +269,7 @@ def decorator(caller, _func=None):
 # ####################### contextmanager ####################### #
 
 try:  # Python >= 3.2
-    from contextlib import _GeneratorContextManager
+    from contextlib import _GeneratorContextManager  # type: ignore
 except ImportError:  # Python >= 2.5
     from contextlib import GeneratorContextManager as _GeneratorContextManager
 
@@ -288,7 +289,7 @@ if n_args == 2 and not init.varargs:  # (self, genobj) Python 2.7
     def __init__(self, g, *a, **k):
         return _GeneratorContextManager.__init__(self, g(*a, **k))
 
-    ContextManager.__init__ = __init__
+    ContextManager.__init__ = __init__  # type: ignore
 elif n_args == 2 and init.varargs:  # (self, gen, *a, **k) Python 3.4
     pass
 elif n_args == 4:  # (self, gen, args, kwds) Python 3.5
@@ -296,7 +297,7 @@ elif n_args == 4:  # (self, gen, args, kwds) Python 3.5
     def __init__(self, g, *a, **k):
         return _GeneratorContextManager.__init__(self, g, a, k)
 
-    ContextManager.__init__ = __init__
+    ContextManager.__init__ = __init__  # type: ignore
 
 contextmanager = decorator(ContextManager)
 

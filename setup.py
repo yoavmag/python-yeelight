@@ -22,7 +22,7 @@ classifiers = [
 
 setup(
     name="yeelight",
-    version=__version__,
+    version=__version__,  # type: ignore
     author="Stavros Korokithakis",
     author_email="hi@stavros.io",
     url="https://gitlab.com/stavros/python-yeelight/",
