@@ -11,3 +11,4 @@ pytest-cov
 
 gitchangelog
 pre-commit
+pystache
