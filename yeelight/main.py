@@ -35,7 +35,7 @@ _MODEL_SPECS = {
     "bslamp1": {"color_temp": {"min": 1700, "max": 6500}, "nightlight": False},
     "ceiling1": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": False},
     "ceiling2": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": False},
-    "ceiling3": {"color_temp": {"min": 2700, "max": 6000}, "nightlight": True},
+    "ceiling3": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": True},
     "ceiling4": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": True},
     "color2": {"color_temp": {"min": 2700, "max": 6500}, "nightlight": False},
 }
