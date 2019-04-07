@@ -1,23 +1,32 @@
 # Changelog
 
 
-## v0.4.4 (2019-03-18)
+## Unreleased
 
-**Fixes**
+### Fixes
+
+* Add night light support to ceiling1 and ceiling2. [Stavros Korokithakis]
+
+* Fix the color temperature of the ceiling light. [Stavros Korokithakis]
+
+
+## v0.4.4 (2019-03-19)
+
+### Fixes
 
 * Ignore exception more specifically. [Stavros Korokithakis]
 
 
 ## v0.4.3 (2018-09-06)
 
-**Fixes**
+### Fixes
 
 * Fix crash when trying to use BulbType early. [Stavros Korokithakis]
 
 
 ## v0.4.1 (2018-06-25)
 
-**Features**
+### Features
 
 * Provide individual color temperature range per model (#7) [Sebastian Muszynski]
 
@@ -28,18 +37,18 @@
 
 ## v0.4.0 (2018-03-10)
 
-**Features**
+### Features
 
 * Add support for moonlight mode. [Stavros Korokithakis]
 
-**Fixes**
+### Fixes
 
 * Fix bulb type detection (#5) [Sebastian Muszynski]
 
 
 ## v0.3.3 (2017-09-18)
 
-**Fixes**
+### Fixes
 
 * Make the requested properties a parameter of get_properties() and remove flow_params by default. [Stavros Korokithakis]
 
@@ -48,21 +57,21 @@
 
 ## v0.3.2 (2017-06-20)
 
-**Fixes**
+### Fixes
 
 * Use enum-compat instead of enum34. [Stavros Korokithakis]
 
 
 ## v0.3.0 (2017-05-10)
 
-**Features**
+### Features
 
 * Add additional presets. [Stavros Korokithakis]
 
 
 ## v0.2.3 (2017-04-30)
 
-**Fixes**
+### Fixes
 
 * Allow toggling to update the local properties cache. [Stavros Korokithakis]
 
@@ -71,21 +80,21 @@
 
 ## v0.2.2 (2017-02-10)
 
-**Fixes**
+### Fixes
 
 * Pass 0 for the port number in music mode so the OS picks a port at random. [Stavros Korokithakis]
 
 
 ## v0.2.0 (2017-01-19)
 
-**Features**
+### Features
 
 * Add discovery (closes #3). [Stavros Korokithakis]
 
 
 ## v0.1.0 (2017-01-16)
 
-**Fixes**
+### Fixes
 
 * Abort with an error if the bulb closes the connection (fixes #5). [Stavros Korokithakis]
 
@@ -94,38 +103,38 @@
 
 ## v0.0.13 (2017-01-11)
 
-**Changes**
+### Changes
 
 * Add changelog. [Stavros Korokithakis]
 
-**Fixes**
+### Fixes
 
 * Make `ensure_on` more accurate by always fetching the properties before a method call. [Stavros Korokithakis]
 
 
 ## v0.0.12 (2016-11-16)
 
-**Fixes**
+### Fixes
 
 * Remove debugging command that was erroneously left in. [Stavros Korokithakis]
 
 
 ## v0.0.11 (2016-11-16)
 
-**Features**
+### Features
 
 * Add music mode. [Stavros Korokithakis]
 
 
 ## v0.0.10 (2016-11-15)
 
-**Features**
+### Features
 
 * Add set_adjust. [Stavros Korokithakis]
 
 * Add value parameter to set_hsv. [Stavros Korokithakis]
 
-**Fixes**
+### Fixes
 
 * Don't require flake8 for tests any more. [Stavros Korokithakis]
 
@@ -136,14 +145,14 @@
 
 ## v0.0.9 (2016-11-14)
 
-**Fixes**
+### Fixes
 
 * Ignore errors on init files. [Stavros Korokithakis]
 
 
 ## v0.0.8 (2016-11-14)
 
-**Fixes**
+### Fixes
 
 * Hopefully actually fix version string problem during setup. [Stavros Korokithakis]
 
