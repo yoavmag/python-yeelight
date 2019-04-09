@@ -6,13 +6,11 @@ import socket
 import struct
 
 from future.utils import raise_from
-from yeelight.enums import SetSceneClass
-from yeelight.utils import rgb_to_yeelight
 
 from .decorator import decorator
-from .enums import BulbType, LightType, PowerMode
+from .enums import BulbType, LightType, PowerMode, SetSceneClass
 from .flow import Flow
-from .utils import _clamp
+from .utils import _clamp, rgb_to_yeelight
 
 if os.name == "nt":
     import win32api as fcntl
