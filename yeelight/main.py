@@ -6,6 +6,8 @@ import socket
 import struct
 
 from future.utils import raise_from
+from yeelight.enums import SetSceneClass
+from yeelight.utils import rgb_to_yeelight
 
 from .decorator import decorator
 from .enums import BulbType, LightType, PowerMode
@@ -450,13 +452,7 @@ class Bulb(object):
         """
         self.ensure_on()
 
-        if self.model:
-            color_specs = self.get_model_specs()["color_temp"]
-            degrees = _clamp(degrees, color_specs["min"], color_specs["max"])
-        else:
-            degrees = _clamp(degrees, 1700, 6500)
-
-        return "set_ct_abx", [degrees], dict(kwargs, light_type=light_type)
+        return "set_ct_abx", [self._clamp_color_temp(degrees)], dict(kwargs, light_type=light_type)
 
     @_command
     def set_rgb(self, red, green, blue, light_type=LightType.Main, **kwargs):
@@ -471,10 +467,7 @@ class Bulb(object):
         """
         self.ensure_on()
 
-        red = _clamp(red, 0, 255)
-        green = _clamp(green, 0, 255)
-        blue = _clamp(blue, 0, 255)
-        return "set_rgb", [red * 65536 + green * 256 + blue], dict(kwargs, light_type=light_type)
+        return "set_rgb", [rgb_to_yeelight(red, green, blue)], dict(kwargs, light_type=light_type)
 
     @_command
     def set_adjust(self, action, prop, **kwargs):
@@ -526,8 +519,7 @@ class Bulb(object):
 
             hue = _clamp(hue, 0, 359) / 359.0
             saturation = _clamp(saturation, 0, 100) / 100.0
-            red, green, blue = [int(round(col * 255)) for col in colorsys.hsv_to_rgb(hue, saturation, 1)]
-            rgb = red * 65536 + green * 256 + blue
+            rgb = rgb_to_yeelight(*[int(round(col * 255)) for col in colorsys.hsv_to_rgb(hue, saturation, 1)])
             return "start_cf", [1, 1, "%s, 1, %s, %s" % (duration, rgb, value)], dict(kwargs, light_type=light_type)
 
     @_command
@@ -609,11 +601,7 @@ class Bulb(object):
 
         self.ensure_on()
 
-        return (
-            "start_cf",
-            [flow.count * len(flow.transitions), flow.action.value, flow.expression],
-            dict(kwargs, light_type=light_type),
-        )
+        return "start_cf", flow.as_start_flow_params, dict(kwargs, light_type=light_type)
 
     @_command
     def stop_flow(self, light_type=LightType.Main, **kwargs):
@@ -623,6 +611,52 @@ class Bulb(object):
         :param yeelight.enums.LightType light_type: Light type to control.
         """
         return "stop_cf", [], dict(kwargs, light_type=light_type)
+
+    @_command
+    def set_scene(self, klass, *args, light_type=LightType.Main, **kwargs):
+        """
+
+        :param yeelight.enums.SetSceneClass klass: set_scene class
+            "COLOR" means change the smart LED to specified color and brightness.
+                arg[0] int red:         The red value to set (0-255).
+                arg[1] int green:       The green value to set (0-255).
+                arg[2] int blue:        The blue value to set (0-255).
+                arg[3] int: brightness: The brightness value to set (1-100).
+
+            "HSV" means change the smart LED to specified color and brightness.
+                arg[0] int hue:         The hue to set (0-359).
+                arg[1] int saturation:  The saturation to set (0-100).
+                arg[2] int brightness:  The brightness value to set (1-100).
+
+            "CT" means change the smart LED to specified ct and brightness.
+                arg[0] int: degrees:    The degrees to set the color temperature to (min/max are
+                                        specified by the model's capabilities, or 1700-6500).
+                arg[1] int brightness:  The brightness value to set (1-100).
+
+            "CF" means start a color flow in specified fashion.
+                arg[0] yeelight.Flow flow: The Flow instance to start.
+
+            "AUTO_DELAY_OFF" means turn on the smart LED to specified brightness and start a sleep timer
+            to turn off the light after the specified minutes.
+                arg[0] int: brightness: The brightness value to set (1-100).
+                arg[1] int: minutes:    The minutes to wait before auto turn device off
+        """
+
+        scene_args = [klass.name.lower()]
+        if klass == SetSceneClass.COLOR:
+            scene_args += [rgb_to_yeelight(*args[:3]), args[3]]
+        elif klass == SetSceneClass.HSV:
+            scene_args += args
+        elif klass == SetSceneClass.CT:
+            scene_args += [self._clamp_color_temp(args[0]), args[1]]
+        elif klass == SetSceneClass.CF:
+            scene_args += args[0].as_start_flow_params
+        elif klass == SetSceneClass.AUTO_DELAY_OFF:
+            scene_args += args
+        else:
+            raise ValueError("klass argument unknown")
+
+        return "set_scene", scene_args, dict(kwargs, light_type=light_type)
 
     def start_music(self, port=0, ip=None):
         """
@@ -748,3 +782,17 @@ class Bulb(object):
 
         # BulbType.Color and BulbType.Unknown
         return _MODEL_SPECS["color"]
+
+    def _clamp_color_temp(self, degrees):
+        """
+        Clamp color temp to correct range
+
+        :param int degrees: The degrees to set the color temperature to specified by model or defaults
+        (1700-6500).
+        """
+
+        if self.model:
+            color_specs = self.get_model_specs()["color_temp"]
+            return _clamp(degrees, color_specs["min"], color_specs["max"])
+
+        return _clamp(degrees, 1700, 6500)

@@ -39,3 +39,13 @@ class LightType(IntEnum):
 
     Main = 0
     Ambient = 1
+
+
+class SetSceneClass(IntEnum):
+    """Class as specified in yeelight docs"""
+
+    COLOR = 0
+    HSV = 1
+    CT = 2
+    CF = 3
+    AUTO_DELAY_OFF = 4

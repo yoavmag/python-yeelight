@@ -1,3 +1,19 @@
+def rgb_to_yeelight(red, green, blue):
+    """
+    Calculate YeeLight rgb single value from invidual rgb values
+
+    :param red:
+    :param green:
+    :param blue:
+    """
+
+    red = _clamp(red, 0, 255)
+    green = _clamp(green, 0, 255)
+    blue = _clamp(blue, 0, 255)
+
+    return red * 65536 + green * 256 + blue
+
+
 def _clamp(value, minx, maxx):
     """
     Constrain a value between a minimum and a maximum.
