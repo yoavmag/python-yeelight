@@ -4,7 +4,7 @@ import sys
 import unittest
 
 from yeelight import Bulb, Flow, TemperatureTransition, enums  # noqa
-from yeelight.enums import SetSceneClass
+from yeelight.enums import LightType, SetSceneClass
 from yeelight.flow import Action
 
 sys.path.insert(0, os.path.abspath(__file__ + "/../.."))
@@ -154,6 +154,11 @@ class Tests(unittest.TestCase):
     def test_set_scene_color(self):
         self.bulb.set_scene(SetSceneClass.COLOR, 255, 255, 0, 10)
         self.assertEqual(self.socket.sent["method"], "set_scene")
+        self.assertEqual(self.socket.sent["params"], ["color", 16776960, 10])
+
+    def test_set_scene_color_ambilight(self):
+        self.bulb.set_scene(SetSceneClass.COLOR, 255, 255, 0, 10, light_type=LightType.Ambient)
+        self.assertEqual(self.socket.sent["method"], "bg_set_scene")
         self.assertEqual(self.socket.sent["params"], ["color", 16776960, 10])
 
     def test_set_scene_color_temperature(self):
