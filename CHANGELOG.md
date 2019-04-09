@@ -5,6 +5,8 @@
 
 ### Fixes
 
+* Obey model's min/max when setting the bulb's color temperature. [Stavros Korokithakis]
+
 * Add night light support to ceiling1 and ceiling2. [Stavros Korokithakis]
 
 * Fix the color temperature of the ceiling light. [Stavros Korokithakis]
