@@ -444,8 +444,8 @@ class Bulb(object):
         """
         Set the bulb's color temperature.
 
-        :param int degrees: The degrees to set the color temperature to specified by model or defaults
-                            (1700-6500).
+        :param int degrees: The degrees to set the color temperature to (range is
+                            specified by model, or 1700-6500).
         :param yeelight.enums.LightType light_type: Light type to control.
         """
         self.ensure_on()
