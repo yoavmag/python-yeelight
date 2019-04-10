@@ -638,6 +638,8 @@ class Bulb(object):
             to turn off the light after the specified minutes.
                 arg[0] int: brightness: The brightness value to set (1-100).
                 arg[1] int: minutes:    The minutes to wait before auto turn device off
+
+        :param yeelight.enums.LightType light_type: Light type to control.
         """
 
         scene_args = [klass.name.lower()]
