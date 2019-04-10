@@ -611,7 +611,7 @@ class Bulb(object):
         return "stop_cf", [], dict(kwargs, light_type=light_type)
 
     @_command
-    def set_scene(self, klass, *args, light_type=LightType.Main, **kwargs):
+    def set_scene(self, klass, *args, **kwargs):
         """
 
         :param yeelight.enums.SetSceneClass klass: set_scene class
@@ -656,7 +656,7 @@ class Bulb(object):
         else:
             raise ValueError("klass argument unknown")
 
-        return "set_scene", scene_args, dict(kwargs, light_type=light_type)
+        return "set_scene", scene_args, kwargs
 
     def start_music(self, port=0, ip=None):
         """
