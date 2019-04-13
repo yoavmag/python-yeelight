@@ -611,10 +611,12 @@ class Bulb(object):
         return "stop_cf", [], dict(kwargs, light_type=light_type)
 
     @_command
-    def set_scene(self, klass, *args, **kwargs):
+    def set_scene(self, scene_class, *args, **kwargs):
         """
+        This method is used to set the smart LED directly to specified state. If the smart LED is off, then it will
+        turn on the smart LED firstly and then apply the specified command.
 
-        :param yeelight.enums.SetSceneClass klass: set_scene class
+        :param yeelight.enums.SetSceneClass scene_class: set_scene class
             "COLOR" means change the smart LED to specified color and brightness.
                 arg[0] int red:         The red value to set (0-255).
                 arg[1] int green:       The green value to set (0-255).
@@ -642,19 +644,19 @@ class Bulb(object):
         :param yeelight.enums.LightType light_type: Light type to control.
         """
 
-        scene_args = [klass.name.lower()]
-        if klass == SetSceneClass.COLOR:
+        scene_args = [scene_class.name.lower()]
+        if scene_class == SetSceneClass.COLOR:
             scene_args += [rgb_to_yeelight(*args[:3]), args[3]]
-        elif klass == SetSceneClass.HSV:
+        elif scene_class == SetSceneClass.HSV:
             scene_args += args
-        elif klass == SetSceneClass.CT:
+        elif scene_class == SetSceneClass.CT:
             scene_args += [self._clamp_color_temp(args[0]), args[1]]
-        elif klass == SetSceneClass.CF:
+        elif scene_class == SetSceneClass.CF:
             scene_args += args[0].as_start_flow_params
-        elif klass == SetSceneClass.AUTO_DELAY_OFF:
+        elif scene_class == SetSceneClass.AUTO_DELAY_OFF:
             scene_args += args
         else:
-            raise ValueError("klass argument unknown")
+            raise ValueError("Scene class argument is unknown. Please use one from yeelight.enums.SetSceneClass.")
 
         return "set_scene", scene_args, kwargs
 

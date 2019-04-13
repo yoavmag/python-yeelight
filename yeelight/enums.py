@@ -42,7 +42,16 @@ class LightType(IntEnum):
 
 
 class SetSceneClass(IntEnum):
-    """Class as specified in yeelight docs"""
+    """
+
+    class ( as named in Yeelight docs ) specifies how set_scene method should act
+
+    `color` means change the smart LED to specified color and brightness.
+    `hsv` means change the smart LED to specified color and brightness.
+    `ct` means change the smart LED to specified ct and brightness.
+    `cf` means start a color flow in specified fashion.
+    `auto_delay_off` means turn on the smart LED to specified.
+    """
 
     COLOR = 0
     HSV = 1

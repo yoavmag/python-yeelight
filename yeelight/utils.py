@@ -1,6 +1,6 @@
 def rgb_to_yeelight(red, green, blue):
     """
-    Calculate YeeLight rgb single value from invidual rgb values
+    Calculate YeeLight rgb single value from invidual rgb values.
 
     :param red:
     :param green:
