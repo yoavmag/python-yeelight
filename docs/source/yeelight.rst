@@ -60,7 +60,26 @@ Transition presets
 Enums
 -----
 
-.. automodule:: yeelight.enums
+.. autoclass:: yeelight.BulbType
     :members:
     :undoc-members:
-    :show-inheritance:
+
+
+.. autoclass:: yeelight.CronType
+    :members:
+    :undoc-members:
+
+
+.. autoclass:: yeelight.LightType
+    :members:
+    :undoc-members:
+
+
+.. autoclass:: yeelight.PowerMode
+    :members:
+    :undoc-members:
+
+
+.. autoclass:: yeelight.SceneClass
+    :members:
+    :undoc-members:

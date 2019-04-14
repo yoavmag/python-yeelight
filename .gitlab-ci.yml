@@ -19,5 +19,7 @@ docs:
     - pip3.6 install -r requirements_dev.txt
 
   script:
+  - pip3.6 install .
   - cd docs/
+  - which sphinx-build
   - make html
