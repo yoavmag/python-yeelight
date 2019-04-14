@@ -1,11 +1,6 @@
 image: themattrix/tox
 
-stages:
-  - static_check
-  - tests
-
 static_check:
-  stage: static_check
   before_script:
     - apt-get update
     - apt-get install -y git
@@ -14,6 +9,11 @@ static_check:
     - $(find /.pyenv/versions -name pre-commit) run -a --hook-stage=manual
 
 tests:
-  stage: tests
   script:
   - tox
+
+
+docs:
+  script:
+  - cd docs/
+  - make html
