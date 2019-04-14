@@ -5,6 +5,7 @@ static_check:
     - apt-get update
     - apt-get install -y git
     - pip3.6 install -r requirements_dev.txt
+
   script:
     - $(find /.pyenv/versions -name pre-commit) run -a --hook-stage=manual
 
@@ -14,6 +15,9 @@ tests:
 
 
 docs:
+  before_script:
+    - pip3.6 install -r requirements_dev.txt
+
   script:
   - cd docs/
   - make html
