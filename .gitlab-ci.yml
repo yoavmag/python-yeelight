@@ -22,4 +22,4 @@ docs:
   script:
   - pip3.6 install .
   - cd docs/
-  - make html
+  - PATH=~/.pyenv/shims:$PATH make html
