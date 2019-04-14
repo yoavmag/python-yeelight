@@ -8,7 +8,7 @@ import struct
 from future.utils import raise_from
 
 from .decorator import decorator
-from .enums import BulbType, LightType, PowerMode, SetSceneClass
+from .enums import BulbType, LightType, PowerMode, SceneClass
 from .flow import Flow
 from .utils import _clamp, rgb_to_yeelight
 
@@ -616,47 +616,50 @@ class Bulb(object):
         This method is used to set the smart LED directly to specified state. If the smart LED is off, then it will
         turn on the smart LED firstly and then apply the specified command.
 
-        :param yeelight.enums.SetSceneClass scene_class: set_scene class
-            "COLOR" means change the smart LED to specified color and brightness.
+        :param yeelight.enums.SceneClass scene_class: set_scene class
+            `COLOR` changes the light to the specified RGB color and brightness.
                 arg[0] int red:         The red value to set (0-255).
                 arg[1] int green:       The green value to set (0-255).
                 arg[2] int blue:        The blue value to set (0-255).
                 arg[3] int: brightness: The brightness value to set (1-100).
 
-            "HSV" means change the smart LED to specified color and brightness.
+            `HSV` changes the light to the specified HSV color and brightness.
                 arg[0] int hue:         The hue to set (0-359).
                 arg[1] int saturation:  The saturation to set (0-100).
                 arg[2] int brightness:  The brightness value to set (1-100).
 
-            "CT" means change the smart LED to specified ct and brightness.
+            `CT` changes the light to the specified color temperature.
                 arg[0] int: degrees:    The degrees to set the color temperature to (min/max are
                                         specified by the model's capabilities, or 1700-6500).
                 arg[1] int brightness:  The brightness value to set (1-100).
 
-            "CF" means start a color flow in specified fashion.
+            `CF` starts a color flow.
                 arg[0] yeelight.Flow flow: The Flow instance to start.
 
-            "AUTO_DELAY_OFF" means turn on the smart LED to specified brightness and start a sleep timer
-            to turn off the light after the specified minutes.
+            `AUTO_DELAY_OFF` turns the light on to the specified brightness
+            and sets a timer to turn it back off after the given number of minutes.
                 arg[0] int: brightness: The brightness value to set (1-100).
-                arg[1] int: minutes:    The minutes to wait before auto turn device off
+                arg[1] int: minutes:    The minutes to wait before automatically
+                                        turning the light off.
 
         :param yeelight.enums.LightType light_type: Light type to control.
         """
 
         scene_args = [scene_class.name.lower()]
-        if scene_class == SetSceneClass.COLOR:
+        if scene_class == SceneClass.COLOR:
             scene_args += [rgb_to_yeelight(*args[:3]), args[3]]
-        elif scene_class == SetSceneClass.HSV:
+        elif scene_class == SceneClass.HSV:
             scene_args += args
-        elif scene_class == SetSceneClass.CT:
+        elif scene_class == SceneClass.CT:
             scene_args += [self._clamp_color_temp(args[0]), args[1]]
-        elif scene_class == SetSceneClass.CF:
+        elif scene_class == SceneClass.CF:
             scene_args += args[0].as_start_flow_params
-        elif scene_class == SetSceneClass.AUTO_DELAY_OFF:
+        elif scene_class == SceneClass.AUTO_DELAY_OFF:
             scene_args += args
         else:
-            raise ValueError("Scene class argument is unknown. Please use one from yeelight.enums.SetSceneClass.")
+            raise ValueError("Scene class argument is unknown. Please use one from yeelight.enums.SceneClass.")
+
+        print(scene_args)
 
         return "set_scene", scene_args, kwargs
 

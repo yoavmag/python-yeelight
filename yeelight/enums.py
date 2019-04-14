@@ -41,16 +41,19 @@ class LightType(IntEnum):
     Ambient = 1
 
 
-class SetSceneClass(IntEnum):
+class SceneClass(IntEnum):
     """
+    The scene class to use.
 
-    class ( as named in Yeelight docs ) specifies how set_scene method should act
+    The scene class (as named in Yeelight docs) specifies how the set_scene
+    method should act.
 
-    `color` means change the smart LED to specified color and brightness.
-    `hsv` means change the smart LED to specified color and brightness.
-    `ct` means change the smart LED to specified ct and brightness.
-    `cf` means start a color flow in specified fashion.
-    `auto_delay_off` means turn on the smart LED to specified.
+    `COLOR` changes the light to the specified RGB color and brightness.
+    `HSV` changes the light to the specified HSV color and brightness.
+    `CT` changes the light to the specified color temperature.
+    `CF` starts a color flow.
+    `AUTO_DELAY_OFF` turns the light on and sets a timer to turn it back
+                     off after the given number of minutes.
     """
 
     COLOR = 0

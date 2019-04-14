@@ -4,7 +4,7 @@ import sys
 import unittest
 
 from yeelight import Bulb, Flow, TemperatureTransition, enums  # noqa
-from yeelight.enums import LightType, SetSceneClass
+from yeelight.enums import LightType, SceneClass
 from yeelight.flow import Action
 
 sys.path.insert(0, os.path.abspath(__file__ + "/../.."))
@@ -152,34 +152,34 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.socket.sent["params"], [2, 1, "40000, 2, 1700, 100, 40000, 2, 6500, 100"])
 
     def test_set_scene_color(self):
-        self.bulb.set_scene(SetSceneClass.COLOR, 255, 255, 0, 10)
+        self.bulb.set_scene(SceneClass.COLOR, 255, 255, 0, 10)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["color", 16776960, 10])
 
     def test_set_scene_color_ambilight(self):
-        self.bulb.set_scene(SetSceneClass.COLOR, 255, 255, 0, 10, light_type=LightType.Ambient)
+        self.bulb.set_scene(SceneClass.COLOR, 255, 255, 0, 10, light_type=LightType.Ambient)
         self.assertEqual(self.socket.sent["method"], "bg_set_scene")
         self.assertEqual(self.socket.sent["params"], ["color", 16776960, 10])
 
     def test_set_scene_color_temperature(self):
-        self.bulb.set_scene(SetSceneClass.CT, 2000, 15)
+        self.bulb.set_scene(SceneClass.CT, 2000, 15)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["ct", 2000, 15])
 
     def test_set_scene_hsv(self):
-        self.bulb.set_scene(SetSceneClass.HSV, 200, 100, 10)
+        self.bulb.set_scene(SceneClass.HSV, 200, 100, 10)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["hsv", 200, 100, 10])
 
     def test_set_scene_color_flow(self):
         transitions = [TemperatureTransition(1700, duration=40000), TemperatureTransition(6500, duration=40000)]
         flow = Flow(count=1, action=Action.stay, transitions=transitions)
-        self.bulb.set_scene(SetSceneClass.CF, flow)
+        self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["cf", 2, 1, "40000, 2, 1700, 100, 40000, 2, 6500, 100"])
 
     def test_set_scene_auto_delay_off(self):
-        self.bulb.set_scene(SetSceneClass.AUTO_DELAY_OFF, 20, 1)
+        self.bulb.set_scene(SceneClass.AUTO_DELAY_OFF, 20, 1)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["auto_delay_off", 20, 1])
 
