@@ -3,6 +3,10 @@
 
 ## Unreleased
 
+### Features
+
+* Support the "set scene" API call. [Michał Ciemięga]
+
 ### Fixes
 
 * Obey model's min/max when setting the bulb's color temperature. [Stavros Korokithakis]
@@ -10,6 +14,11 @@
 * Add night light support to ceiling1 and ceiling2. [Stavros Korokithakis]
 
 * Fix the color temperature of the ceiling light. [Stavros Korokithakis]
+
+
+## v0.4.4 (2019-03-19)
+
+### Fixes
 
 * Ignore exception more specifically. [Stavros Korokithakis]
 
