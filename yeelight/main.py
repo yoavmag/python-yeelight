@@ -677,8 +677,6 @@ class Bulb(object):
         else:
             raise ValueError("Scene class argument is unknown. Please use one from yeelight.SceneClass.")
 
-        print(scene_args)
-
         return "set_scene", scene_args, kwargs
 
     def start_music(self, port=0, ip=None):
