@@ -3,7 +3,7 @@ import os
 import sys
 import unittest
 
-from yeelight import Bulb, Flow, TemperatureTransition, enums  # noqa
+from yeelight import Bulb, Flow, TemperatureTransition, enums
 from yeelight.enums import LightType, SceneClass
 from yeelight.flow import Action
 
