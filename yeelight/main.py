@@ -619,30 +619,44 @@ class Bulb(object):
 
         :param yeelight.SceneClass scene_class: The YeeLight scene class to use.
 
-        `COLOR` changes the light to the specified RGB color and brightness.
-            arg[0] int red:         The red value to set (0-255).
-            arg[1] int green:       The green value to set (0-255).
-            arg[2] int blue:        The blue value to set (0-255).
-            arg[3] int: brightness: The brightness value to set (1-100).
+        * `COLOR` changes the light to the specified RGB color and brightness.
 
-        `HSV` changes the light to the specified HSV color and brightness.
-            arg[0] int hue:         The hue to set (0-359).
-            arg[1] int saturation:  The saturation to set (0-100).
-            arg[2] int brightness:  The brightness value to set (1-100).
+            Arguments:
 
-        `CT` changes the light to the specified color temperature.
-            arg[0] int: degrees:    The degrees to set the color temperature to (min/max are
-                                    specified by the model's capabilities, or 1700-6500).
-            arg[1] int brightness:  The brightness value to set (1-100).
+            * **red** (*int*)         – The red value to set (0-255).
+            * **green** (*int*)       – The green value to set (0-255).
+            * **blue** (*int*)        – The blue value to set (0-255).
+            * **brightness** (*int*)  – The brightness value to set (1-100).
 
-        `CF` starts a color flow.
-            arg[0] yeelight.Flow flow: The Flow instance to start.
+        * `HSV` changes the light to the specified HSV color and brightness.
 
-        `AUTO_DELAY_OFF` turns the light on to the specified brightness
-        and sets a timer to turn it back off after the given number of minutes.
-            arg[0] int: brightness: The brightness value to set (1-100).
-            arg[1] int: minutes:    The minutes to wait before automatically
-                                    turning the light off.
+            Arguments:
+
+            * **hue** (*int*)         – The hue to set (0-359).
+            * **saturation** (*int*)  – The saturation to set (0-100).
+            * **brightness** (*int*)  – The brightness value to set (1-100).
+
+        * `CT` changes the light to the specified color temperature.
+
+            Arguments:
+
+            * **degrees** (*int*)     – The degrees to set the color temperature to (min/max are specified by the
+              model's capabilities, or 1700-6500).
+            * **brightness** (*int*)  – The brightness value to set (1-100).
+
+        * `CF` starts a color flow.
+
+            Arguments:
+
+            * **flow** (`yeelight.Flow`)  – The Flow instance to start.
+
+        * `AUTO_DELAY_OFF` turns the light on to the specified brightness and sets a timer to turn it back off after the
+          given number of minutes.
+
+            Arguments:
+
+            * **brightness** (*int*)     – The brightness value to set (1-100).
+            * **minutes** (*int*)        – The minutes to wait before automatically turning the light off.
 
         :param yeelight.LightType light_type: Light type to control.
         """

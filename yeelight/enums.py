@@ -45,7 +45,7 @@ class SceneClass(IntEnum):
     """
     The scene class to use.
 
-    The scene class (as named in Yeelight docs) specifies how the set_scene method should act.
+    The scene class (as named in Yeelight docs) specifies how the `Bulb.set_scene` method should act.
 
     | `COLOR` changes the light to the specified RGB color and brightness.
     | `HSV` changes the light to the specified HSV color and brightness.
