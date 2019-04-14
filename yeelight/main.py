@@ -613,8 +613,8 @@ class Bulb(object):
     @_command
     def set_scene(self, scene_class, *args, **kwargs):
         """
-        This method is used to set the smart LED directly to specified state. If the smart LED is off, then it will
-        turn on the smart LED firstly and then apply the specified command.
+        Set the light directly to the specified state. If the light is off,
+        it will first be turned on.
 
         :param yeelight.enums.SceneClass scene_class: set_scene class
             `COLOR` changes the light to the specified RGB color and brightness.
