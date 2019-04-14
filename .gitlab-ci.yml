@@ -22,4 +22,4 @@ docs:
   script:
   - pip3.6 install .
   - cd docs/
-  - PATH=~/.pyenv/shims:$PATH make html
+  - $(find /.pyenv/versions -name sphinx-build) -b html -d build/doctrees -W source build/html
