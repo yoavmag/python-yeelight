@@ -67,6 +67,15 @@ class Flow(object):
         expr = ", ".join(str(value) for value in expr)
         return expr
 
+    @property
+    def as_start_flow_params(self):
+        """
+        Return a YeeLight start_cf compatible params
+
+        :rtype: list
+        """
+        return self.count * len(self.transitions), self.action.value, self.expression
+
 
 class FlowTransition(object):
     """A single transition in the flow."""

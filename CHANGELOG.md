@@ -11,11 +11,6 @@
 
 * Fix the color temperature of the ceiling light. [Stavros Korokithakis]
 
-
-## v0.4.4 (2019-03-19)
-
-### Fixes
-
 * Ignore exception more specifically. [Stavros Korokithakis]
 
 
