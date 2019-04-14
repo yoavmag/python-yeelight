@@ -1,3 +1,5 @@
+# encoding: utf8
+
 import colorsys
 import json
 import logging
@@ -8,9 +10,9 @@ import struct
 from future.utils import raise_from
 
 from .decorator import decorator
-from .enums import BulbType, LightType, PowerMode
+from .enums import BulbType, LightType, PowerMode, SceneClass
 from .flow import Flow
-from .utils import _clamp
+from .utils import _clamp, rgb_to_yeelight
 
 if os.name == "nt":
     import win32api as fcntl
@@ -210,7 +212,7 @@ class Bulb(object):
                              <yeelight.Bulb.get_properties()>` or run
                              :py:meth:`ensure_on() <yeelight.Bulb.ensure_on>`
                              yourself if you're worried about rate-limiting.
-        :param yeelight.enums.PowerMode power_mode:
+        :param yeelight.PowerMode power_mode:
                              The mode for the light set when powering on.
         :param str model:    The model name of the yeelight (e.g. "color",
                              "mono", etc). The setting is used to enable model
@@ -277,12 +279,12 @@ class Bulb(object):
         """
         The type of bulb we're communicating with.
 
-        Returns a :py:class:`BulbType <yeelight.enums.BulbType>` describing the bulb
+        Returns a :py:class:`BulbType <yeelight.BulbType>` describing the bulb
         type.
 
         When trying to access before properties are known, the bulb type is unknown.
 
-        :rtype: yeelight.enums.BulbType
+        :rtype: yeelight.BulbType
         :return: The bulb's type.
         """
         if not self._last_properties or any(name not in self.last_properties for name in ["ct", "rgb"]):
@@ -447,17 +449,11 @@ class Bulb(object):
 
         :param int degrees: The degrees to set the color temperature to (min/max are
                             specified by the model's capabilities, or 1700-6500).
-        :param yeelight.enums.LightType light_type: Light type to control.
+        :param yeelight.LightType light_type: Light type to control.
         """
         self.ensure_on()
 
-        if self.model:
-            color_specs = self.get_model_specs()["color_temp"]
-            degrees = _clamp(degrees, color_specs["min"], color_specs["max"])
-        else:
-            degrees = _clamp(degrees, 1700, 6500)
-
-        return "set_ct_abx", [degrees], dict(kwargs, light_type=light_type)
+        return "set_ct_abx", [self._clamp_color_temp(degrees)], dict(kwargs, light_type=light_type)
 
     @_command
     def set_rgb(self, red, green, blue, light_type=LightType.Main, **kwargs):
@@ -467,15 +463,12 @@ class Bulb(object):
         :param int red:   The red value to set (0-255).
         :param int green: The green value to set (0-255).
         :param int blue:  The blue value to set (0-255).
-        :param yeelight.enums.LightType light_type:
+        :param yeelight.LightType light_type:
                           Light type to control.
         """
         self.ensure_on()
 
-        red = _clamp(red, 0, 255)
-        green = _clamp(green, 0, 255)
-        blue = _clamp(blue, 0, 255)
-        return "set_rgb", [red * 65536 + green * 256 + blue], dict(kwargs, light_type=light_type)
+        return "set_rgb", [rgb_to_yeelight(red, green, blue)], dict(kwargs, light_type=light_type)
 
     @_command
     def set_adjust(self, action, prop, **kwargs):
@@ -505,7 +498,7 @@ class Bulb(object):
         :param int value:      The value to set (0-100). If omitted, the bulb's
                                brightness will remain the same as before the
                                change.
-        :param yeelight.enums.LightType light_type: Light type to control.
+        :param yeelight.LightType light_type: Light type to control.
         """
         self.ensure_on()
 
@@ -527,8 +520,7 @@ class Bulb(object):
 
             hue = _clamp(hue, 0, 359) / 359.0
             saturation = _clamp(saturation, 0, 100) / 100.0
-            red, green, blue = [int(round(col * 255)) for col in colorsys.hsv_to_rgb(hue, saturation, 1)]
-            rgb = red * 65536 + green * 256 + blue
+            rgb = rgb_to_yeelight(*[int(round(col * 255)) for col in colorsys.hsv_to_rgb(hue, saturation, 1)])
             return "start_cf", [1, 1, "%s, 1, %s, %s" % (duration, rgb, value)], dict(kwargs, light_type=light_type)
 
     @_command
@@ -537,7 +529,7 @@ class Bulb(object):
         Set the bulb's brightness.
 
         :param int brightness: The brightness value to set (1-100).
-        :param yeelight.enums.LightType light_type: Light type to control.
+        :param yeelight.LightType light_type: Light type to control.
         """
         self.ensure_on()
 
@@ -549,7 +541,7 @@ class Bulb(object):
         """
         Turn the bulb on.
 
-        :param yeelight.enums.LightType light_type: Light type to control.
+        :param yeelight.LightType light_type: Light type to control.
         """
 
         return "set_power", ["on"], dict(kwargs, light_type=light_type)
@@ -559,7 +551,7 @@ class Bulb(object):
         """
         Turn the bulb off.
 
-        :param yeelight.enums.LightType light_type: Light type to control.
+        :param yeelight.LightType light_type: Light type to control.
         """
         return "set_power", ["off"], dict(kwargs, light_type=light_type)
 
@@ -568,7 +560,7 @@ class Bulb(object):
         """
         Toggle the bulb on or off.
 
-        :param yeelight.enums.LightType light_type: Light type to control.
+        :param yeelight.LightType light_type: Light type to control.
         """
         return "toggle", [], dict(kwargs, light_type=light_type)
 
@@ -585,7 +577,7 @@ class Bulb(object):
         If you get a "general error" setting this, yet the bulb reports as supporting `set_default` during
         discovery, disable "auto save settings" in the YeeLight app.
 
-        :param yeelight.enums.LightType light_type: Light type to control.
+        :param yeelight.LightType light_type: Light type to control.
         """
         return "set_default", [], dict(kwargs, light_type=light_type)
 
@@ -610,20 +602,84 @@ class Bulb(object):
 
         self.ensure_on()
 
-        return (
-            "start_cf",
-            [flow.count * len(flow.transitions), flow.action.value, flow.expression],
-            dict(kwargs, light_type=light_type),
-        )
+        return "start_cf", flow.as_start_flow_params, dict(kwargs, light_type=light_type)
 
     @_command
     def stop_flow(self, light_type=LightType.Main, **kwargs):
         """
         Stop a flow.
 
-        :param yeelight.enums.LightType light_type: Light type to control.
+        :param yeelight.LightType light_type: Light type to control.
         """
         return "stop_cf", [], dict(kwargs, light_type=light_type)
+
+    @_command
+    def set_scene(self, scene_class, *args, **kwargs):
+        """
+        Set the light directly to the specified state. If the light is off,
+        it will first be turned on.
+
+        :param yeelight.SceneClass scene_class: The YeeLight scene class to use.
+
+        * `COLOR` changes the light to the specified RGB color and brightness.
+
+            Arguments:
+
+            * **red** (*int*)         – The red value to set (0-255).
+            * **green** (*int*)       – The green value to set (0-255).
+            * **blue** (*int*)        – The blue value to set (0-255).
+            * **brightness** (*int*)  – The brightness value to set (1-100).
+
+        * `HSV` changes the light to the specified HSV color and brightness.
+
+            Arguments:
+
+            * **hue** (*int*)         – The hue to set (0-359).
+            * **saturation** (*int*)  – The saturation to set (0-100).
+            * **brightness** (*int*)  – The brightness value to set (1-100).
+
+        * `CT` changes the light to the specified color temperature.
+
+            Arguments:
+
+            * **degrees** (*int*)     – The degrees to set the color temperature to (min/max are specified by the
+              model's capabilities, or 1700-6500).
+            * **brightness** (*int*)  – The brightness value to set (1-100).
+
+        * `CF` starts a color flow.
+
+            Arguments:
+
+            * **flow** (`yeelight.Flow`)  – The Flow instance to start.
+
+        * `AUTO_DELAY_OFF` turns the light on to the specified brightness and sets a timer to turn it back off after the
+          given number of minutes.
+
+            Arguments:
+
+            * **brightness** (*int*)     – The brightness value to set (1-100).
+            * **minutes** (*int*)        – The minutes to wait before automatically turning the light off.
+
+        :param yeelight.LightType light_type: Light type to control.
+        """
+
+        scene_args = [scene_class.name.lower()]
+        if scene_class == SceneClass.COLOR:
+            scene_args += [rgb_to_yeelight(*args[:3]), args[3]]
+        elif scene_class == SceneClass.HSV:
+            scene_args += args
+        elif scene_class == SceneClass.CT:
+            scene_args += [self._clamp_color_temp(args[0]), args[1]]
+        elif scene_class == SceneClass.CF:
+            scene_args += args[0].as_start_flow_params
+        elif scene_class == SceneClass.AUTO_DELAY_OFF:
+            scene_args += args
+        else:
+            raise ValueError("Scene class argument is unknown. Please use one from yeelight.SceneClass.")
+
+        print(scene_args)
+
+        return "set_scene", scene_args, kwargs
 
     def start_music(self, port=0, ip=None):
         """
@@ -692,7 +748,7 @@ class Bulb(object):
 
         >>> bulb.cron_add(CronType.off, 10)
 
-        :param yeelight.enums.CronType event_type: The type of event. Currently,
+        :param yeelight.CronType event_type: The type of event. Currently,
                                                    only ``CronType.off``.
         """
         return "cron_add", [event_type.value, value], kwargs
@@ -702,7 +758,7 @@ class Bulb(object):
         """
         Retrieve an event from cron.
 
-        :param yeelight.enums.CronType event_type: The type of event. Currently,
+        :param yeelight.CronType event_type: The type of event. Currently,
                                                    only ``CronType.off``.
         """
         return "cron_get", [event_type.value], kwargs
@@ -712,7 +768,7 @@ class Bulb(object):
         """
         Remove an event from cron.
 
-        :param yeelight.enums.CronType event_type: The type of event. Currently,
+        :param yeelight.CronType event_type: The type of event. Currently,
                                                    only ``CronType.off``.
         """
         return "cron_del", [event_type.value], kwargs
@@ -726,7 +782,7 @@ class Bulb(object):
 
         If the light is off it will be turned on.
 
-        :param yeelight.enums.PowerMode mode: The mode to switch to.
+        :param yeelight.PowerMode mode: The mode to switch to.
         """
         return self.turn_on(power_mode=mode)
 
@@ -749,3 +805,17 @@ class Bulb(object):
 
         # BulbType.Color and BulbType.Unknown
         return _MODEL_SPECS["color"]
+
+    def _clamp_color_temp(self, degrees):
+        """
+        Clamp color temp to correct range
+
+        :param int degrees: The degrees to set the color temperature to specified by model or defaults
+        (1700-6500).
+        """
+
+        if self.model:
+            color_specs = self.get_model_specs()["color_temp"]
+            return _clamp(degrees, color_specs["min"], color_specs["max"])
+
+        return _clamp(degrees, 1700, 6500)
