@@ -1,3 +1,5 @@
+# encoding: utf8
+
 import colorsys
 import json
 import logging
