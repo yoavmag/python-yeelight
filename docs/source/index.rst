@@ -210,3 +210,4 @@ keyword.
    Home <self>
    flow
    API documentation <yeelight>
+   genindex
