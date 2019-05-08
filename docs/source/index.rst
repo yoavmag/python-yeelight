@@ -107,6 +107,11 @@ Now that you've discovered your bulb's IP, it's time to instantiate a new
     # Set brightness to 50%.
     >>> bulb.set_brightness(50)
 
+    # Set brightness of the background light to 50%, if your
+    # light supports it.
+    >>> from yeelight import LightType
+    >>> bulb.set_brightness(50, light_type=LightType.Ambient)
+
     # Set RGB value.
     >>> bulb.set_rgb(255, 0, 0)
 
