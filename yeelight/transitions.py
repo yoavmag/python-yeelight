@@ -219,7 +219,9 @@ def randomloop(duration=750, brightness=100, count=9):
     :rtype: list
     """
     count = _clamp(count, 1, 9)
-    transitions = [HSVTransition(random.randint(0, 360), 100, duration=duration, brightness=brightness) for _ in range(count)]
+    transitions = [
+        HSVTransition(random.randint(0, 360), 100, duration=duration, brightness=brightness) for _ in range(count)
+    ]
     return transitions
 
 
@@ -235,5 +237,8 @@ def slowdown(duration=2000, brightness=100, count=8):
     :rtype: list
     """
     count = _clamp(count, 1, 8)
-    transitions = [HSVTransition(random.randint(0, 360), 100, duration=(duration * x), brightness=brightness) for x in range(1, count + 1)]
+    transitions = [
+        HSVTransition(random.randint(0, 360), 100, duration=(duration * x), brightness=brightness)
+        for x in range(1, count + 1)
+    ]
     return transitions
