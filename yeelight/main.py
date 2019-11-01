@@ -6,6 +6,8 @@ import logging
 import os
 import socket
 import struct
+import time
+import random
 
 from future.utils import raise_from
 
@@ -396,6 +398,7 @@ class Bulb(object):
             # create a new one.
             self.__socket.close()
             self.__socket = None
+            time.sleep(random.random())
             raise_from(BulbException("A socket error occurred when sending the command."), ex)
 
         if self._music_mode:
@@ -408,11 +411,13 @@ class Bulb(object):
         while response is None:
             try:
                 data = self._socket.recv(16 * 1024)
+                time.sleep(random.random())
             except socket.error:
                 # An error occured, let's close and abort...
                 self.__socket.close()
                 self.__socket = None
                 response = {"error": "Bulb closed the connection."}
+                time.sleep(random.random())
                 break
 
             for line in data.split(b"\r\n"):
