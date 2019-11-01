@@ -3,8 +3,12 @@ import os
 import sys
 import unittest
 
-from yeelight import Bulb, Flow, TemperatureTransition, enums
-from yeelight.enums import LightType, SceneClass
+from yeelight import Bulb
+from yeelight import enums
+from yeelight import Flow
+from yeelight import TemperatureTransition
+from yeelight.enums import LightType
+from yeelight.enums import SceneClass
 from yeelight.flow import Action
 
 sys.path.insert(0, os.path.abspath(__file__ + "/../.."))

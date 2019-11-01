@@ -3,7 +3,6 @@
 
 Information describing the project.
 """
-
 from .version import __version__
 
 # The package name, which is also the "UNIX name" for the project.

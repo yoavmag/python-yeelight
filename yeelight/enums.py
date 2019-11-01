@@ -1,4 +1,5 @@
-from enum import Enum, IntEnum
+from enum import Enum
+from enum import IntEnum
 
 
 class CronType(Enum):

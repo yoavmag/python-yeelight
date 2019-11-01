@@ -1,8 +1,10 @@
 """Pre-made transitions, for your strobing pleasure."""
-
 import random
 
-from .flow import HSVTransition, RGBTransition, SleepTransition, TemperatureTransition
+from .flow import HSVTransition
+from .flow import RGBTransition
+from .flow import SleepTransition
+from .flow import TemperatureTransition
 from .utils import _clamp
 
 

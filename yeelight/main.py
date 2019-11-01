@@ -1,5 +1,4 @@
 # encoding: utf8
-
 import colorsys
 import json
 import logging
@@ -10,9 +9,13 @@ import struct
 from future.utils import raise_from
 
 from .decorator import decorator
-from .enums import BulbType, LightType, PowerMode, SceneClass
+from .enums import BulbType
+from .enums import LightType
+from .enums import PowerMode
+from .enums import SceneClass
 from .flow import Flow
-from .utils import _clamp, rgb_to_yeelight
+from .utils import _clamp
+from .utils import rgb_to_yeelight
 
 if os.name == "nt":
     import win32api as fcntl
