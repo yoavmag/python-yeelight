@@ -4,10 +4,10 @@ import colorsys
 import json
 import logging
 import os
+import random
 import socket
 import struct
 import time
-import random
 
 from future.utils import raise_from
 
