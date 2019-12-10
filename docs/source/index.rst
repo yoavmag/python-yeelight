@@ -199,7 +199,7 @@ each call::
     >>> bulb.effect = "sudden"
 
     # This will turn the bulb off immediately:
-    >>> bulb.turn_on()
+    >>> bulb.turn_off()
 
 
 There are two effect types, ``"sudden"`` and ``"smooth"``. The ``"sudden"`` type
