@@ -45,6 +45,8 @@ _MODEL_SPECS = {
     "color2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
 }
 
+def get_known_models():
+    return list(_MODEL_SPECS.keys())
 
 @decorator
 def _command(f, *args, **kw):
