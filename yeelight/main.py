@@ -46,6 +46,16 @@ _MODEL_SPECS = {
 }
 
 
+def get_known_models():
+    """
+    Helper method to return all known yeelight models.
+
+    The models spec dict is private and internal, this function allows consumers to get
+    a list of models via a public method.
+    """
+    return list(_MODEL_SPECS.keys())
+
+
 @decorator
 def _command(f, *args, **kw):
     """A decorator that wraps a function and enables effects."""
