@@ -45,8 +45,11 @@ _MODEL_SPECS = {
     "color2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
 }
 
+
 def get_known_models():
+    """ Helper method to return all known yeelight models. Models spec dict is private and internal, so lets allow to get list of models, via public method. """
     return list(_MODEL_SPECS.keys())
+
 
 @decorator
 def _command(f, *args, **kw):
