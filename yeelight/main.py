@@ -261,10 +261,12 @@ class Bulb(object):
     @property
     def _socket(self):
         """Return, optionally creating, the communication socket."""
+        improt time
         if self.__socket is None:
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.__socket.settimeout(5)
             self.__socket.connect((self._ip, self._port))
+            time.sleep(1)
         return self.__socket
 
     def ensure_on(self):
