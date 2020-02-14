@@ -1,6 +1,13 @@
 # Changelog
 
 
+## Unreleased
+
+### Features
+
+* Add get_known_models method. [Michał Ciemięga]
+
+
 ## v0.5.0 (2019-04-15)
 
 ### Features
