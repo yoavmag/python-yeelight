@@ -263,7 +263,7 @@ class Bulb(object):
         """Return, optionally creating, the communication socket."""
         if self.__socket is None:
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.__socket.settimeout(5)
+            self.__socket.settimeout(2)
             self.__socket.connect((self._ip, self._port))
         return self.__socket
 
