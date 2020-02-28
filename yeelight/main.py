@@ -168,9 +168,9 @@ def discover_bulbs(timeout=2, interface=False):
 
 def get_bulb_capabilities(ip_address, timeout=2):
     """
-    Get capabilities from single device
+    Get capabilities from single device.
 
-    :param str ip_address: Ip address of device to query about capabilities
+    :param str ip_address: IP address of device to query about capabilities
 
     :param int timeout: How many seconds to wait for replies. Discovery will
                         always take exactly this long to run, as it can't know
