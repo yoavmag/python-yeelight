@@ -2,9 +2,7 @@
 import colorsys
 import json
 import logging
-import os
 import socket
-import struct
 
 from future.utils import raise_from
 
@@ -14,13 +12,11 @@ from .enums import LightType
 from .enums import PowerMode
 from .enums import SceneClass
 from .flow import Flow
+from .ssdp_discover import filter_lower_case_keys
+from .ssdp_discover import parse_capabilities
+from .ssdp_discover import send_discovery_packet
 from .utils import _clamp
 from .utils import rgb_to_yeelight
-
-if os.name == "nt":
-    import win32api as fcntl
-else:
-    import fcntl  # type: ignore
 
 
 try:
@@ -130,21 +126,6 @@ def _command(f, *args, **kw):
         return result[0]
 
 
-def get_ip_address(ifname):
-    """
-    Returns the IPv4 address of the requested interface (thanks Martin Konecny, https://stackoverflow.com/a/24196955)
-
-    :param string interface: The interface to get the IPv4 address of.
-
-    :returns: The interface's IPv4 address.
-
-    """
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return socket.inet_ntoa(
-        fcntl.ioctl(s.fileno(), 0x8915, struct.pack("256s", bytes(ifname[:15], "utf-8")))[20:24]
-    )  # SIOCGIFADDR
-
-
 def discover_bulbs(timeout=2, interface=False):
     """
     Discover all the bulbs in the local network.
@@ -161,15 +142,7 @@ def discover_bulbs(timeout=2, interface=False):
     :returns: A list of dictionaries, containing the ip, port and capabilities
               of each of the bulbs in the network.
     """
-    msg = "\r\n".join(["M-SEARCH * HTTP/1.1", "HOST: 239.255.255.250:1982", 'MAN: "ssdp:discover"', "ST: wifi_bulb"])
-
-    # Set up UDP socket
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 32)
-    if interface:
-        s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(get_ip_address(interface)))
-    s.settimeout(timeout)
-    s.sendto(msg.encode(), ("239.255.255.250", 1982))
+    s = send_discovery_packet(timeout, interface)
 
     bulbs = []
     bulb_ips = set()
@@ -179,18 +152,42 @@ def discover_bulbs(timeout=2, interface=False):
         except socket.timeout:
             break
 
-        capabilities = dict([x.strip("\r").split(": ") for x in data.decode().split("\n") if ":" in x])
+        capabilities = parse_capabilities(data)
         parsed_url = urlparse(capabilities["Location"])
 
         bulb_ip = (parsed_url.hostname, parsed_url.port)
         if bulb_ip in bulb_ips:
             continue
 
-        capabilities = {key: value for key, value in capabilities.items() if key.islower()}
+        capabilities = filter_lower_case_keys(capabilities)
         bulbs.append({"ip": bulb_ip[0], "port": bulb_ip[1], "capabilities": capabilities})
         bulb_ips.add(bulb_ip)
 
     return bulbs
+
+
+def get_bulb_capabilities(ip_address, timeout=2):
+    """
+    Get capabilities from single device.
+
+    :param str ip_address: IP address of device to query about capabilities
+
+    :param int timeout: How many seconds to wait for replies. Discovery will
+                        always take exactly this long to run, as it can't know
+                        when all the bulbs have finished responding.
+
+    :returns: Dictionary, containing the ip, port and capabilities
+    """
+
+    s = send_discovery_packet(timeout, ip_address=ip_address)
+
+    try:
+        data, addr = s.recvfrom(65507)
+    except socket.timeout:
+        return None
+
+    capabilities = parse_capabilities(data)
+    return filter_lower_case_keys(capabilities)
 
 
 class BulbException(Exception):
