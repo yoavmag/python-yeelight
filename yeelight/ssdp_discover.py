@@ -10,7 +10,7 @@ else:
 
 def get_ip_address(ifname):
     """
-    Returns the IPv4 address of the requested interface (thanks Martin Konecny, https://stackoverflow.com/a/24196955)
+    Return the IPv4 address of the requested interface (thanks Martin Konecny, https://stackoverflow.com/a/24196955)
 
     :param string interface: The interface to get the IPv4 address of.
 
@@ -23,31 +23,26 @@ def get_ip_address(ifname):
     )  # SIOCGIFADDR
 
 
-def send_discovery_packet(timeout=2, interface=False, ip_address=None):
+def send_discovery_packet(timeout=2, interface=False, ip_address="239.255.255.250"):
     """
-    Send SSDP discover packet.
+    Send SSDP discovery packet.
 
     :param int timeout: How many seconds to wait for replies. Discovery will
                         always take exactly this long to run, as it can't know
                         when all the bulbs have finished responding.
-
     :param string interface: The interface that should be used for multicast packets.
                              Note: it *has* to have a valid IPv4 address. IPv6-only
                              interfaces are not supported (at the moment).
                              The default one will be used if this is not specified.
-
     :param string ip_address: IP address to send ssdp discovery packet to. If provided, it will be send to specified
-                              device. Otherwise it will be sent to multicast address.
+                              device. Otherwise it will be sent to the multicast address.
 
     :return: Socket used to send packet.
 
     """
-    if ip_address is None:
-        ip_address = "239.255.255.250"
-
     msg = "\r\n".join(["M-SEARCH * HTTP/1.1", "HOST: " + ip_address + ":1982", 'MAN: "ssdp:discover"', "ST: wifi_bulb"])
 
-    # Set up UDP socket
+    # Set up the UDP socket.
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 32)
     if interface:
@@ -60,8 +55,7 @@ def send_discovery_packet(timeout=2, interface=False, ip_address=None):
 
 def parse_capabilities(data):
     """
-
-    Parses SSDP discovery capabilities to dict.
+    Parse SSDP discovery capabilities to a dictionary.
 
     :param string data: Original data from SSDP discovery from the bulb.
 
@@ -95,11 +89,10 @@ def parse_capabilities(data):
 
 def filter_lower_case_keys(dict):
     """
-    Filters dict to include only lower case keys. Used to skip HTTP response fields.
+    Filter dict to include only lower case keys. Used to skip HTTP response fields.
 
     :param dict: Dict with all capabilities parsed from the SSDP discovery.
 
     :return: Dict with lower case keys only.
-
     """
     return {key: value for key, value in dict.items() if key.islower()}
