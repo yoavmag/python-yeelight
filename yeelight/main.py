@@ -166,30 +166,6 @@ def discover_bulbs(timeout=2, interface=False):
     return bulbs
 
 
-def get_bulb_capabilities(ip_address, timeout=2):
-    """
-    Get capabilities from single device.
-
-    :param str ip_address: IP address of device to query about capabilities
-
-    :param int timeout: How many seconds to wait for replies. Discovery will
-                        always take exactly this long to run, as it can't know
-                        when all the bulbs have finished responding.
-
-    :returns: Dictionary, containing the ip, port and capabilities
-    """
-
-    s = send_discovery_packet(timeout, ip_address=ip_address)
-
-    try:
-        data, addr = s.recvfrom(65507)
-    except socket.timeout:
-        return None
-
-    capabilities = parse_capabilities(data)
-    return filter_lower_case_keys(capabilities)
-
-
 class BulbException(Exception):
     """
     A generic yeelight exception.
@@ -263,6 +239,27 @@ class Bulb(object):
             self.__socket.settimeout(5)
             self.__socket.connect((self._ip, self._port))
         return self.__socket
+
+    def get_capabilities(self, timeout=2):
+        """
+        Get the bulb's capabilities using the discovery protocol.
+
+        :param int timeout: How many seconds to wait for replies. Discovery will
+                            always take exactly this long to run, as it can't know
+                            when all the bulbs have finished responding.
+
+        :returns: Dictionary, containing the ip, port and capabilities
+        """
+
+        s = send_discovery_packet(timeout, ip_address=self.ip)
+
+        try:
+            data, addr = s.recvfrom(65507)
+        except socket.timeout:
+            return None
+
+        capabilities = parse_capabilities(data)
+        return filter_lower_case_keys(capabilities)
 
     def ensure_on(self):
         """Turn the bulb on if it is off."""
@@ -464,7 +461,7 @@ class Bulb(object):
         """
         self.ensure_on()
 
-        return "set_ct_abx", [self._clamp_color_temp(degrees)], dict(kwargs, light_type=light_type)
+        return ("set_ct_abx", [self._clamp_color_temp(degrees)], dict(kwargs, light_type=light_type))
 
     @_command
     def set_rgb(self, red, green, blue, light_type=LightType.Main, **kwargs):
@@ -479,7 +476,7 @@ class Bulb(object):
         """
         self.ensure_on()
 
-        return "set_rgb", [rgb_to_yeelight(red, green, blue)], dict(kwargs, light_type=light_type)
+        return ("set_rgb", [rgb_to_yeelight(red, green, blue)], dict(kwargs, light_type=light_type))
 
     @_command
     def set_adjust(self, action, prop, **kwargs):
@@ -532,7 +529,7 @@ class Bulb(object):
             hue = _clamp(hue, 0, 359) / 359.0
             saturation = _clamp(saturation, 0, 100) / 100.0
             rgb = rgb_to_yeelight(*[int(round(col * 255)) for col in colorsys.hsv_to_rgb(hue, saturation, 1)])
-            return "start_cf", [1, 1, "%s, 1, %s, %s" % (duration, rgb, value)], dict(kwargs, light_type=light_type)
+            return ("start_cf", [1, 1, "%s, 1, %s, %s" % (duration, rgb, value)], dict(kwargs, light_type=light_type))
 
     @_command
     def set_brightness(self, brightness, light_type=LightType.Main, **kwargs):
@@ -613,7 +610,7 @@ class Bulb(object):
 
         self.ensure_on()
 
-        return "start_cf", flow.as_start_flow_params, dict(kwargs, light_type=light_type)
+        return ("start_cf", flow.as_start_flow_params, dict(kwargs, light_type=light_type))
 
     @_command
     def stop_flow(self, light_type=LightType.Main, **kwargs):

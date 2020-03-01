@@ -13,5 +13,4 @@ from yeelight.flow import TemperatureTransition
 from yeelight.main import Bulb
 from yeelight.main import BulbException
 from yeelight.main import discover_bulbs
-from yeelight.main import get_bulb_capabilities
 from yeelight.version import __version__
