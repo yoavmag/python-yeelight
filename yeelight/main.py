@@ -214,10 +214,11 @@ class Bulb(object):
         self.duration = duration
         self.auto_on = auto_on
         self.power_mode = power_mode
-        self.model = model
+        self._model = model
 
         self.__cmd_id = 0  # The last command id we used.
         self._last_properties = {}  # The last set of properties we've seen.
+        self._capabilities = {}  # Capabilites obtained via SSDP Discovery.
         self._music_mode = False  # Whether we're currently in music mode.
         self.__socket = None  # The socket we use to communicate.
 
@@ -248,10 +249,24 @@ class Bulb(object):
                             always take exactly this long to run, as it can't know
                             when all the bulbs have finished responding.
 
-        :returns: Dictionary, containing the ip, port and capabilities
+        :returns: Dictionary, containing the ip, port and capabilities. For example:
+                  {
+                  'id': '0x0000000002eb9f61',
+                  'model': 'ceiling3',
+                  'fw_ver': '43',
+                  'support': 'get_prop set_default set_power toggle set_bright set_scene cron_add cron_get cron_del start_cf stop_cf set_ct_abx set_name set_adjust adjust_bright adjust_ct',
+                  'power': 'on',
+                  'bright': '99',
+                  'color_mode': '2',
+                  'ct': '3802',
+                  'rgb': '0',
+                  'hue': '0',
+                  'sat': '0',
+                  'name': ''
+                  }
         """
 
-        s = send_discovery_packet(timeout, ip_address=self.ip)
+        s = send_discovery_packet(timeout, ip_address=self._ip)
 
         try:
             data, addr = s.recvfrom(65507)
@@ -259,7 +274,10 @@ class Bulb(object):
             return None
 
         capabilities = parse_capabilities(data)
-        return filter_lower_case_keys(capabilities)
+        capabilities = filter_lower_case_keys(capabilities)
+
+        self._capabilities = capabilities
+        return capabilities
 
     def ensure_on(self):
         """Turn the bulb on if it is off."""
@@ -281,6 +299,19 @@ class Bulb(object):
         :py:meth:`get_properties <yeelight.Bulb.get_properties()>`.
         """
         return self._last_properties
+
+    @property
+    def capabilities(self):
+        """
+        Capabilities obtained via SSDP Discovery.
+
+        They will be empty, unless updated via:
+        :py:meth:`get_capabilities <yeelight.Bulb.get_capabilities()>`.
+
+        :return: Capabilities dict returned by :py:meth:`get_capabilities`.
+        """
+
+        return self._capabilities
 
     @property
     def bulb_type(self):
@@ -308,6 +339,20 @@ class Bulb(object):
             return BulbType.White
         else:
             return BulbType.Color
+
+    @property
+    def model(self):
+        """
+        Return declared model / model discovered via SSDP Discovery or None.
+
+        :return: Device model
+        """
+        if self._model:
+            return self._model
+        elif "model" in self.capabilities:
+            return self.capabilities["model"]
+        else:
+            return None
 
     @property
     def music_mode(self):
