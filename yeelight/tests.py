@@ -143,7 +143,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.socket.sent["params"], [6500, "sudden", 300])
 
     def test_color_temp_with_model_declared(self):
-        self.bulb.model = "ceiling2"
+        self.bulb._model = "ceiling2"
         self.bulb.set_color_temp(1800)
         self.assertEqual(self.socket.sent["method"], "set_ct_abx")
         self.assertEqual(self.socket.sent["params"], [2700, "smooth", 300])
