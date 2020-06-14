@@ -40,6 +40,7 @@ _MODEL_SPECS = {
     "ceiling4": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": True},
     "color2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
     "ceiling13": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
+    "ct_bulb": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
 }
 
 
