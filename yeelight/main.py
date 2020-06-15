@@ -6,7 +6,7 @@ import socket
 
 from future.utils import raise_from
 
-from .decorator import decorator
+from .decorator import decorator  # type: ignore
 from .enums import BulbType
 from .enums import LightType
 from .enums import PowerMode
@@ -27,20 +27,20 @@ except ImportError:
 _LOGGER = logging.getLogger(__name__)
 
 _MODEL_SPECS = {
-    "mono": {"color_temp": {"min": 2700, "max": 2700}, "night_light": False, "background_light": False},
-    "mono1": {"color_temp": {"min": 2700, "max": 2700}, "night_light": False, "background_light": False},
-    "color": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
-    "color1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
-    "strip1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
     "bslamp1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
     "bslamp2": {"color_temp": {"min": 1700, "max": 6500}, "night_light": True, "background_light": False},
+    "ceiling13": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
     "ceiling1": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
     "ceiling2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
     "ceiling3": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
     "ceiling4": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": True},
+    "color1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
     "color2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
-    "ceiling13": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
+    "color": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
     "ct_bulb": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
+    "mono1": {"color_temp": {"min": 2700, "max": 2700}, "night_light": False, "background_light": False},
+    "mono": {"color_temp": {"min": 2700, "max": 2700}, "night_light": False, "background_light": False},
+    "strip1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
 }
 
 

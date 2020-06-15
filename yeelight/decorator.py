@@ -364,7 +364,7 @@ def dispatch_on(*dispatch_args):
                 if n_vas > 1:
                     raise RuntimeError("Ambiguous dispatch for %s: %s" % (t, vas))
                 elif n_vas == 1:
-                    va, = vas
+                    (va,) = vas
                     mro = type("t", (t, va), {}).__mro__[1:]
                 else:
                     mro = t.__mro__
