@@ -34,6 +34,7 @@ _MODEL_SPECS = {
     "ceiling2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
     "ceiling3": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
     "ceiling4": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": True},
+    "ceiling5": {"color_temp": {"min": 2700, "max": 5700}, "night_light": True, "background_light": False},
     "color1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
     "color2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
     "color": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
