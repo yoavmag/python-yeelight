@@ -267,7 +267,6 @@ class Bulb(object):
                   'name': ''
                   }
         """
-
         s = send_discovery_packet(timeout, ip_address=self._ip)
 
         try:
@@ -312,7 +311,6 @@ class Bulb(object):
 
         :return: Capabilities dict returned by :py:meth:`get_capabilities`.
         """
-
         return self._capabilities
 
     @property
@@ -598,7 +596,6 @@ class Bulb(object):
 
         :param yeelight.LightType light_type: Light type to control.
         """
-
         return "set_power", ["on"], dict(kwargs, light_type=light_type)
 
     @_command
@@ -671,15 +668,15 @@ class Bulb(object):
     @_command
     def set_scene(self, scene_class, *args, **kwargs):
         """
-        Set the light directly to the specified state. If the light is off,
-        it will first be turned on.
+        Set the light directly to the specified state.
+
+        If the light is off, it will first be turned on.
 
         :param yeelight.SceneClass scene_class: The YeeLight scene class to use.
 
         * `COLOR` changes the light to the specified RGB color and brightness.
 
             Arguments:
-
             * **red** (*int*)         – The red value to set (0-255).
             * **green** (*int*)       – The green value to set (0-255).
             * **blue** (*int*)        – The blue value to set (0-255).
@@ -688,7 +685,6 @@ class Bulb(object):
         * `HSV` changes the light to the specified HSV color and brightness.
 
             Arguments:
-
             * **hue** (*int*)         – The hue to set (0-359).
             * **saturation** (*int*)  – The saturation to set (0-100).
             * **brightness** (*int*)  – The brightness value to set (1-100).
@@ -696,7 +692,6 @@ class Bulb(object):
         * `CT` changes the light to the specified color temperature.
 
             Arguments:
-
             * **degrees** (*int*)     – The degrees to set the color temperature to (min/max are specified by the
               model's capabilities, or 1700-6500).
             * **brightness** (*int*)  – The brightness value to set (1-100).
@@ -704,20 +699,17 @@ class Bulb(object):
         * `CF` starts a color flow.
 
             Arguments:
-
             * **flow** (`yeelight.Flow`)  – The Flow instance to start.
 
         * `AUTO_DELAY_OFF` turns the light on to the specified brightness and sets a timer to turn it back off after the
           given number of minutes.
 
             Arguments:
-
             * **brightness** (*int*)     – The brightness value to set (1-100).
             * **minutes** (*int*)        – The minutes to wait before automatically turning the light off.
 
         :param yeelight.LightType light_type: Light type to control.
         """
-
         scene_args = [scene_class.name.lower()]
         if scene_class == SceneClass.COLOR:
             scene_args += [rgb_to_yeelight(*args[:3]), args[3]]
@@ -840,9 +832,7 @@ class Bulb(object):
         return self.turn_on(power_mode=mode)
 
     def get_model_specs(self, **kwargs):
-        """
-        Return the specifications (e.g. color temperature min/max) of the bulb.
-        """
+        """Return the specifications (e.g. color temperature min/max) of the bulb."""
         if self.model is not None and self.model in _MODEL_SPECS:
             return _MODEL_SPECS[self.model]
 
@@ -861,12 +851,11 @@ class Bulb(object):
 
     def _clamp_color_temp(self, degrees):
         """
-        Clamp color temp to correct range
+        Clamp color temp to correct range.
 
         :param int degrees: The degrees to set the color temperature to specified by model or defaults
         (1700-6500).
         """
-
         if self.model:
             color_specs = self.get_model_specs()["color_temp"]
             return _clamp(degrees, color_specs["min"], color_specs["max"])

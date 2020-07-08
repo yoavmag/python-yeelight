@@ -1,13 +1,11 @@
 def rgb_to_yeelight(red, green, blue):
     """
-    Calculate the YeeLight-compatible single color value from invidual
-    RGB values.
+    Calculate the YeeLight-compatible single color value from individual RGB values.
 
     :param red:
     :param green:
     :param blue:
     """
-
     red = _clamp(red, 0, 255)
     green = _clamp(green, 0, 255)
     blue = _clamp(blue, 0, 255)

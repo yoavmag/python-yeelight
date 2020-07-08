@@ -29,7 +29,6 @@ class Flow(object):
         A complete flow, consisting of one or multiple transitions.
 
         Example:
-
         >>> transitions = [RGBTransition(255, 0, 0), SleepTransition(400)]
         >>> Flow(3, Flow.actions.recover, transitions)
 
@@ -70,7 +69,7 @@ class Flow(object):
     @property
     def as_start_flow_params(self):
         """
-        Return a YeeLight start_cf compatible params
+        Return a YeeLight start_cf compatible params.
 
         :rtype: list
         """

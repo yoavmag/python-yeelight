@@ -10,7 +10,9 @@ else:
 
 def get_ip_address(ifname):
     """
-    Return the IPv4 address of the requested interface (thanks Martin Konecny, https://stackoverflow.com/a/24196955)
+    Return the IPv4 address of the requested interface.
+
+    Thanks Martin Konecny, https://stackoverflow.com/a/24196955.
 
     :param string interface: The interface to get the IPv4 address of.
 
@@ -83,13 +85,14 @@ def parse_capabilities(data):
         ...
     }
     """
-
     return dict([x.strip("\r").split(": ") for x in data.decode().split("\n") if ":" in x])
 
 
 def filter_lower_case_keys(dict):
     """
-    Filter dict to include only lower case keys. Used to skip HTTP response fields.
+    Filter dict to include only lower case keys.
+
+    Used to skip HTTP response fields.
 
     :param dict: Dict with all capabilities parsed from the SSDP discovery.
 

@@ -229,7 +229,7 @@ def randomloop(duration=750, brightness=100, count=9):
 
 def slowdown(duration=2000, brightness=100, count=8):
     """
-    Changes between `count` random chosen colors with increasing transition time.
+    Change between `count` random chosen colors with increasing transition time.
 
     :param int duration: The duration to fade to next color, in milliseconds.
     :param int brightness: The brightness of the transition.
