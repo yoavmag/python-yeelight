@@ -693,7 +693,7 @@ class Bulb(object):
 
             Arguments:
             * **degrees** (*int*)     – The degrees to set the color temperature to (min/max are specified by the
-              model's capabilities, or 1700-6500).
+            model's capabilities, or 1700-6500).
             * **brightness** (*int*)  – The brightness value to set (1-100).
 
         * `CF` starts a color flow.
