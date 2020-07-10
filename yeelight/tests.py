@@ -6,6 +6,7 @@ import unittest
 from yeelight import Bulb
 from yeelight import enums
 from yeelight import Flow
+from yeelight import flows
 from yeelight import TemperatureTransition
 from yeelight.enums import LightType
 from yeelight.enums import SceneClass
@@ -186,6 +187,75 @@ class Tests(unittest.TestCase):
         self.bulb.set_scene(SceneClass.AUTO_DELAY_OFF, 20, 1)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["auto_delay_off", 20, 1])
+
+    def test_sunrise(self):
+        flow = flows.sunrise()
+        self.bulb.set_scene(SceneClass.CF, flow)
+        self.assertEqual(self.socket.sent["method"], "set_scene")
+        self.assertEqual(
+            self.socket.sent["params"], ["cf", 3, 1, "50, 1, 16731392, 1, 360000, 2, 1700, 10, 540000, 2, 2700, 100"]
+        )
+
+    def test_sunset(self):
+        flow = flows.sunset()
+        self.bulb.set_scene(SceneClass.CF, flow)
+        self.assertEqual(self.socket.sent["method"], "set_scene")
+        self.assertEqual(
+            self.socket.sent["params"], ["cf", 3, 2, "50, 2, 2700, 10, 180000, 2, 1700, 5, 420000, 1, 16731136, 1"]
+        )
+
+    def test_romance(self):
+        flow = flows.romance()
+        self.bulb.set_scene(SceneClass.CF, flow)
+        self.assertEqual(self.socket.sent["method"], "set_scene")
+        self.assertEqual(self.socket.sent["params"], ["cf", 0, 1, "4000, 1, 5838189, 1, 4000, 1, 6689834, 1"])
+
+    def test_happybirthday(self):
+        flow = flows.happybirthday()
+        self.bulb.set_scene(SceneClass.CF, flow)
+        self.assertEqual(self.socket.sent["method"], "set_scene")
+        self.assertEqual(
+            self.socket.sent["params"],
+            ["cf", 0, 1, "1996, 1, 14438425, 80, 1996, 1, 14448670, 80, 1996, 1, 11153940, 80"],
+        )
+
+    def test_candleflicker(self):
+        flow = flows.candleflicker()
+        self.bulb.set_scene(SceneClass.CF, flow)
+        self.assertEqual(self.socket.sent["method"], "set_scene")
+        self.assertEqual(
+            self.socket.sent["params"],
+            [
+                "cf",
+                0,
+                0,
+                "800, 2, 2700, 50, 800, 2, 2700, 30, 1200, 2, 2700, 80, 800, 2, 2700, 60, 1200, 2, 2700, 90, 2400, 2, 2700, 50, 1200, 2, 2700, 80, 800, 2, 2700, 60, 400, 2, 2700, 70",
+            ],
+        )
+
+    def test_home(self):
+        flow = flows.home()
+        self.bulb.set_scene(SceneClass.CF, flow)
+        self.assertEqual(self.socket.sent["method"], "set_scene")
+        self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 2, 3200, 80"])
+
+    def test_nightmode(self):
+        flow = flows.nightmode()
+        self.bulb.set_scene(SceneClass.CF, flow)
+        self.assertEqual(self.socket.sent["method"], "set_scene")
+        self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 1, 16750848, 1"])
+
+    def test_datingnight(self):
+        flow = flows.datingnight()
+        self.bulb.set_scene(SceneClass.CF, flow)
+        self.assertEqual(self.socket.sent["method"], "set_scene")
+        self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 1, 16737792, 50"])
+
+    def test_movie(self):
+        flow = flows.movie()
+        self.bulb.set_scene(SceneClass.CF, flow)
+        self.assertEqual(self.socket.sent["method"], "set_scene")
+        self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 1, 1315890, 50"])
 
 
 if __name__ == "__main__":
