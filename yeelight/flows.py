@@ -156,7 +156,7 @@ def random_loop(duration=750, brightness=100, count=9):
     :returns: An infinite Flow consisting of up to 9 transitions.
     :rtype: Flow
     """
-    return Flow(count=0, action=Action.recover, transitions=transitions.randomloop(duration, brightness, count))
+    return Flow(count=0, action=Action.recover, transitions=transitions.random_loop(duration, brightness, count))
 
 
 def slowdown(duration=2000, brightness=100, count=8):

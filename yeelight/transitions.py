@@ -209,7 +209,7 @@ def rgb(duration=250, brightness=100, sleep=3000):
     return transitions
 
 
-def randomloop(duration=750, brightness=100, count=9):
+def random_loop(duration=750, brightness=100, count=9):
     """
     Color changes between `count` randomly chosen colors.
 

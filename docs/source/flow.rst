@@ -127,3 +127,16 @@ You can use the transitions simply by calling the preset::
 
 Remember that the transition presets are functions, so you need to call them.
 That's because some of them take parameters.
+
+
+Flow presets
+------------
+
+The library includes some flow transitions in the
+:py:mod:`yeelight.flows` module, to make it easy for you to start.
+
+You can use the flows simply by calling the preset::
+
+    from yeelight.flows import *
+
+    christmas().start_flow(flow)
