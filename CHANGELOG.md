@@ -7,6 +7,10 @@
 
 * Add manufacturer's default and other flows. [Stavros Korokithakis]
 
+### Fixes
+
+* Fix flow preset names. [Stavros Korokithakis]
+
 
 ## v0.5.3 (2020-06-15)
 

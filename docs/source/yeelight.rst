@@ -57,6 +57,15 @@ Transition presets
     :show-inheritance:
 
 
+Flow presets
+------------
+
+.. automodule:: yeelight.flows
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 Enums
 -----
 

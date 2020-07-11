@@ -210,8 +210,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["cf", 0, 1, "4000, 1, 5838189, 1, 4000, 1, 6689834, 1"])
 
-    def test_happybirthday(self):
-        flow = flows.happybirthday()
+    def test_happy_birthday(self):
+        flow = flows.happy_birthday()
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(
@@ -219,8 +219,8 @@ class Tests(unittest.TestCase):
             ["cf", 0, 1, "1996, 1, 14438425, 80, 1996, 1, 14448670, 80, 1996, 1, 11153940, 80"],
         )
 
-    def test_candleflicker(self):
-        flow = flows.candleflicker()
+    def test_candle_flicker(self):
+        flow = flows.candle_flicker()
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(
@@ -239,14 +239,14 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 2, 3200, 80"])
 
-    def test_nightmode(self):
-        flow = flows.nightmode()
+    def test_night_mode(self):
+        flow = flows.night_mode()
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 1, 16750848, 1"])
 
-    def test_datingnight(self):
-        flow = flows.datingnight()
+    def test_date_night(self):
+        flow = flows.date_night()
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 1, 16737792, 50"])
