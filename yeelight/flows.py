@@ -145,7 +145,7 @@ def rgb(duration=250, brightness=100, sleep=3000):
     return Flow(count=0, action=Action.recover, transitions=transitions.rgb(duration, brightness, sleep))
 
 
-def randomloop(duration=750, brightness=100, count=9):
+def random_loop(duration=750, brightness=100, count=9):
     """
     Color changes between `count` randomly chosen colors.
 
@@ -187,7 +187,7 @@ def home(duration=500, brightness=80):
     return Flow(count=0, action=Action.recover, transitions=transition)
 
 
-def nightmode(duration=500, brightness=1):
+def night_mode(duration=500, brightness=1):
     """
     Dim the lights to a dark red, pleasant for the eyes at night.
 
@@ -201,7 +201,7 @@ def nightmode(duration=500, brightness=1):
     return Flow(count=0, action=Action.recover, transitions=transition)
 
 
-def datingnight(duration=500, brightness=50):
+def date_night(duration=500, brightness=50):
     """
     Dim the lights to a cozy orange.
 
@@ -273,7 +273,7 @@ def romance():
     return Flow(count=0, action=Action.stay, transitions=transitions)
 
 
-def happybirthday():
+def happy_birthday():
     """
     Happy Birthday lights.
 
@@ -288,7 +288,7 @@ def happybirthday():
     return Flow(count=0, action=Action.stay, transitions=transitions)
 
 
-def candleflicker():
+def candle_flicker():
     """
     Simulate candle flicker.
 
