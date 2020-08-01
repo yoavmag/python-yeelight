@@ -5,6 +5,8 @@
 
 ### Features
 
+* Add update notification functionality (implements #4) [Xiaonan Shen]
+
 * Add manufacturer's default and other flows. [Stavros Korokithakis]
 
 * Add ct_bulb bulb type. [Stavros Korokithakis]
