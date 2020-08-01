@@ -1,7 +1,11 @@
 import json
 import os
 import sys
+import threading
+import time
 import unittest
+
+import mock
 
 from yeelight import Bulb
 from yeelight import enums
@@ -256,6 +260,40 @@ class Tests(unittest.TestCase):
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 1, 1315890, 50"])
+
+    def test_notification(self):
+        notification_event = threading.Event()
+        listening_stopped_event = threading.Event()
+        shutdown = False
+
+        def _callback(new_properties):
+            notification_event.set()
+
+        def _listen():
+            self.bulb.listen(_callback)
+            listening_stopped_event.set()
+
+        def _blocking_recv(size):
+            time.sleep(0.1)
+            if shutdown:
+                raise IOError
+            return b'{"method": "props", "params": {"power": "on"}}'
+
+        def _shutdown(type):
+            shutdown = True  # noqa: F841
+
+        socket = mock.MagicMock()
+        type(socket).recv = mock.MagicMock(side_effect=_blocking_recv)
+        type(socket).shutdown = mock.MagicMock(side_effect=_shutdown)
+
+        with mock.patch("yeelight.main.socket.socket", return_value=socket):
+            assert self.bulb.last_properties == {}
+            thread = threading.Thread(target=_listen)
+            thread.start()
+            assert notification_event.wait(0.5) is True
+            assert self.bulb.last_properties == {"power": "on"}
+            self.bulb.stop_listening()
+            assert listening_stopped_event.wait(0.5) is True
 
 
 if __name__ == "__main__":

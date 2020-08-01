@@ -224,6 +224,9 @@ class Bulb(object):
         self._music_mode = False  # Whether we're currently in music mode.
         self.__socket = None  # The socket we use to communicate.
 
+        self._notification_socket = None  # The socket to get update notifications
+        self._is_listening = False  # Indicate if we are listening
+
     @property
     def _cmd_id(self):
         """
@@ -363,6 +366,54 @@ class Bulb(object):
         :return: True if music mode is on, False otherwise.
         """
         return self._music_mode
+
+    def listen(self, callback):
+        """
+        Listen to state update notifications.
+
+        This function is blocking until a socket error occurred or being stopped by
+        ``stop_listening``. It should be run in a ``Thread`` or ``asyncio`` event loop.
+
+        The callback function should take one parameter, containing the new/updates
+        properties. It will be called when ``last_properties`` is updated.
+
+        :param callable callback: A callback function to receive state update notification.
+        """
+        try:
+            self._is_listening = True
+            self._notification_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._notification_socket.setblocking(True)
+            self._notification_socket.connect((self._ip, self._port))
+            while self._notification_socket is not None:
+                data = self._notification_socket.recv(16 * 1024)
+                for line in data.split(b"\r\n"):
+                    if not line:
+                        continue
+                    try:
+                        line = json.loads(line.decode("utf8"))
+                    except ValueError:
+                        _LOGGER.error("Invalid data: %s", line)
+                        continue
+
+                    if line.get("method") == "props":
+                        # Update notification received
+                        _LOGGER.debug("New props received: %s", line)
+                        self._last_properties.update(line["params"])
+                        callback(line["params"])
+        except socket.error as ex:
+            if not self._is_listening:
+                # Socket is manually shutdown by stop_listening
+                return
+            self._notification_socket.close()
+            self._notification_socket = None
+            raise_from(BulbException("Failed to read from the socket."), ex)
+
+    def stop_listening(self):
+        """Stop listening to notifications."""
+        self._is_listening = False
+        self._notification_socket.shutdown(socket.SHUT_RDWR)
+        self._notification_socket.close()
+        self._notification_socket = None
 
     def get_properties(
         self,

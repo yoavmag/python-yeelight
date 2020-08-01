@@ -7,16 +7,11 @@
 
 * Add manufacturer's default and other flows. [Stavros Korokithakis]
 
+* Add ct_bulb bulb type. [Stavros Korokithakis]
+
 ### Fixes
 
 * Fix flow preset names. [Stavros Korokithakis]
-
-
-## v0.5.3 (2020-06-15)
-
-### Features
-
-* Add ct_bulb bulb type. [Stavros Korokithakis]
 
 
 ## v0.5.1 (2020-02-14)
