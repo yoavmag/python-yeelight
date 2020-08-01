@@ -12,3 +12,5 @@ pytest-cov
 gitchangelog
 pre-commit
 pystache
+
+mock==3.0.5

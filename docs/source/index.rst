@@ -209,6 +209,33 @@ Keep in mind that the ``effect`` and ``duration`` parameters *must* be passed by
 keyword.
 
 
+Notifications
+-------------
+To get read-time state update notifications, run ``listen`` in a ``Thread``::
+
+    >>> import threading
+    >>> thread = threading.Thread(target=bulb.listen, args=(callback,))
+    >>> thread.start()
+
+    # To stop listening:
+    >>> bulb.stop_listening()
+
+Note that the callback function should take one parameter, which will be a dict
+containing the new/updated parameters. It will be called when
+``last_properties`` is updated.
+
+You can also use ``asyncio`` event loop::
+
+    >>> import asyncio
+    >>> async def main():
+    >>>     loop = asyncio.get_running_loop()
+    >>>     await loop.run_in_executor(None, bulb.listen, callback)
+    >>> asyncio.run(main())
+
+    # To stop listening in an event loop:
+    >>> await loop.run_in_executor(None, bulb.stop_listening)
+
+
 .. toctree::
    :hidden:
 
