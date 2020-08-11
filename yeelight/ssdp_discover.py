@@ -1,28 +1,24 @@
-import os
 import socket
-import struct
 
-if os.name == "nt":
-    import win32api as fcntl
-else:
-    import fcntl  # type: ignore
+import ifaddr
 
 
 def get_ip_address(ifname):
     """
-    Return the IPv4 address of the requested interface.
-
-    Thanks Martin Konecny, https://stackoverflow.com/a/24196955.
+    Return the first IPv4 address of the requested interface.
 
     :param string interface: The interface to get the IPv4 address of.
 
     :returns: The interface's IPv4 address.
 
     """
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return socket.inet_ntoa(
-        fcntl.ioctl(s.fileno(), 0x8915, struct.pack("256s", bytes(ifname[:15], "utf-8")))[20:24]
-    )  # SIOCGIFADDR
+    for adapter in ifaddr.get_adapters():
+        if adapter.name != ifname:
+            continue
+        for ip in adapter.ips:
+            if not isinstance(ip.ip, tuple):  # not IPv6
+                return ip.ip
+    return None
 
 
 def send_discovery_packet(timeout=2, interface=False, ip_address="239.255.255.250"):
