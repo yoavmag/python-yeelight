@@ -13,6 +13,8 @@
 
 ### Fixes
 
+* Fix get_ip_address portability by using the ifaddr library. [Greg V]
+
 * Fix flow preset names. [Stavros Korokithakis]
 
 

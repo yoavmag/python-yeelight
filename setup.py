@@ -32,7 +32,7 @@ setup(
     license="BSD",
     classifiers=classifiers,
     packages=["yeelight"],
-    install_requires=["enum-compat", "future", 'pypiwin32;platform_system=="Windows"'],
+    install_requires=["enum-compat", "future", "ifaddr", 'pypiwin32;platform_system=="Windows"'],
     test_suite="yeelight.tests",
     tests_require=[],
 )
