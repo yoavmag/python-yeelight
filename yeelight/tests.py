@@ -5,7 +5,10 @@ import threading
 import time
 import unittest
 
-import mock
+if sys.version_info >= (3, 3):
+    import unittest.mock as mock
+else:
+    import mock
 
 from yeelight import Bulb
 from yeelight import enums
