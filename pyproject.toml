@@ -17,7 +17,7 @@ dev-requires = [
     "Sphinx",
     "sphinx-rtd-theme"
 ]
-requires = ["enum-compat", "future", "ifaddr"]
+requires = ["enum34;python_version<'3.4'", "future", "ifaddr"]
 classifiers = [
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
