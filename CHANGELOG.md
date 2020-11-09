@@ -5,6 +5,8 @@
 
 ### Features
 
+* Drop support for anything less than Python 3.4 (including 2.x) [Stavros Korokithakis]
+
 * Add the color4 bulb specs (closes #60) [Stavros Korokithakis]
 
 * Add Yeelight XianYu C2001 Ceiling Light (C2001C550) specs. [Sebastian Muszynski]
