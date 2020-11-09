@@ -5,6 +5,8 @@
 
 ### Features
 
+* Add the color4 bulb specs (closes #60) [Stavros Korokithakis]
+
 * Add Yeelight XianYu C2001 Ceiling Light (C2001C550) specs. [Sebastian Muszynski]
 
 * Add Yeelight Crystal Pendant Light (Meteorite, YLDL01YL) specs. [Sebastian Muszynski]
