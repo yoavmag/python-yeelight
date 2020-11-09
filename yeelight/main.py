@@ -724,7 +724,7 @@ class Bulb(object):
         return "stop_cf", [], dict(kwargs, light_type=light_type)
 
     @_command
-    def set_scene(self, scene_class, *args, **kwargs):
+    def set_scene(self, scene_class, *args, light_type=LightType.Main, **kwargs):
         """
         Set the light directly to the specified state.
 
@@ -782,7 +782,7 @@ class Bulb(object):
         else:
             raise ValueError("Scene class argument is unknown. Please use one from yeelight.SceneClass.")
 
-        return "set_scene", scene_args, kwargs
+        return "set_scene", scene_args, dict(kwargs, light_type=light_type)
 
     def start_music(self, port=0, ip=None):
         """
