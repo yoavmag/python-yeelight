@@ -5,6 +5,19 @@
 
 ### Features
 
+* Add Yeelight XianYu C2001 Ceiling Light (C2001C550) specs. [Sebastian Muszynski]
+
+* Add Yeelight Crystal Pendant Light (Meteorite, YLDL01YL) specs. [Sebastian Muszynski]
+
+* Add ceiling6 (YLXD08YL) and ceiling19 (YLXD49YL) specs. [Юрий Аузинь]
+
+* Add ceiling15 (YLXD42YL) specs. [Stavros Korokithakis]
+
+
+## v0.5.4 (2020-10-08)
+
+### Features
+
 * Add update notification functionality (implements #4) [Xiaonan Shen]
 
 * Add manufacturer's default and other flows. [Stavros Korokithakis]

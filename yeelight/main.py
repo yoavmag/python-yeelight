@@ -43,6 +43,7 @@ _MODEL_SPECS = {
     "ceil26": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
     "color1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
     "color2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
+    "color4": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
     "color": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
     "ct_bulb": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
     "mono1": {"color_temp": {"min": 2700, "max": 2700}, "night_light": False, "background_light": False},
