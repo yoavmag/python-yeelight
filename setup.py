@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# NOTE: This file is only used for tox to be able to install the library to test it.
+# See pyproject.toml for the actual setup file.
 import sys
 
 from setuptools import setup
