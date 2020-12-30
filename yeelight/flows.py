@@ -38,7 +38,7 @@ def strobe():
     return Flow(count=0, action=Action.recover, transitions=transitions.strobe())
 
 
-def pulse(red, green, blue, duration=250, brightness=100):
+def pulse(red, green, blue, duration=250, brightness=100, count=1):
     """
     Pulse a single color once (mainly to be used for notifications).
 
@@ -47,11 +47,12 @@ def pulse(red, green, blue, duration=250, brightness=100):
     :param int blue: The blue color component to pulse (0-255).
     :param int duration: The duration to pulse for, in milliseconds.
     :param int brightness: The brightness to pulse at (1-100).
+    :param int count: The number times to pulse.
 
     :returns: A Flow consisting of 2 transitions, after which the bulb returns to its previous state.
     :rtype: Flow
     """
-    return Flow(count=1, action=Action.recover, transitions=transitions.pulse(red, green, blue, duration, brightness))
+    return Flow(count, action=Action.recover, transitions=transitions.pulse(red, green, blue, duration, brightness))
 
 
 def strobe_color(brightness=100):
