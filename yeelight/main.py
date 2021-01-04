@@ -3,6 +3,7 @@ import colorsys
 import json
 import logging
 import socket
+import time
 
 from future.utils import raise_from
 
@@ -131,9 +132,9 @@ def _command(f, *args, **kw):
         if method == "bg_set_power" and params[0] == "on" and power_mode.value != PowerMode.LAST:
             params += [power_mode.value]
 
-    result = self.send_command(method, params).get("result", [])
-    if result:
-        return result[0]
+    response = self.send_command(method, params)
+    if response is not None and "result" in response:
+        return response.get("result", [])[0]
 
 
 def discover_bulbs(timeout=2, interface=False):
@@ -250,8 +251,12 @@ class Bulb(object):
         """Return, optionally creating, the communication socket."""
         if self.__socket is None:
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.__socket.settimeout(5)
+            self.__socket.settimeout(3)
             self.__socket.connect((self._ip, self._port))
+            # This is required since you need to wait for the connection to be properly established
+            # before you send a command, else you'd get a socket timeout
+            time.sleep(0.5)
+
         return self.__socket
 
     def get_capabilities(self, timeout=2):
@@ -507,31 +512,15 @@ class Bulb(object):
 
         _LOGGER.debug("%s > %s", self, command)
 
+        response = None
         try:
             self._socket.send((json.dumps(command) + "\r\n").encode("utf8"))
-        except socket.error as ex:
-            # Some error occurred, remove this socket in hopes that we can later
-            # create a new one.
-            self.__socket.close()
-            self.__socket = None
-            raise_from(BulbException("A socket error occurred when sending the command."), ex)
 
-        if self._music_mode:
-            # We're in music mode, nothing else will happen.
-            return {"result": ["ok"]}
+            if self._music_mode:
+                # We're in music mode, nothing else will happen.
+                return {"result": ["ok"]}
 
-        # The bulb will send us updates on its state in addition to responses,
-        # so we want to make sure that we read until we see an actual response.
-        response = None
-        while response is None:
-            try:
-                data = self._socket.recv(16 * 1024)
-            except socket.error:
-                # An error occured, let's close and abort...
-                self.__socket.close()
-                self.__socket = None
-                response = {"error": "Bulb closed the connection."}
-                break
+            data = self._socket.recv(16 * 1024)
 
             for line in data.split(b"\r\n"):
                 if not line:
@@ -549,13 +538,22 @@ class Bulb(object):
                 else:
                     self._last_properties.update(line["params"])
 
+        except socket.error as ex:
+            _LOGGER.error(ex)
+            raise BulbException(ex)
+        finally:
+            # Don't unassign socket when testing. This breaks the tests
+            if self.__socket is not None and not self._music_mode and hasattr(self.__socket, "close"):
+                self.__socket.close()
+                self.__socket = None
+
         if method == "set_music" and params == [0] and "error" in response and response["error"]["code"] == -5000:
             # The bulb seems to throw an error for no reason when stopping music mode,
             # it doesn't affect operation and we can't do anything about it, so we might
             # as well swallow it.
             return {"id": 1, "result": ["ok"]}
 
-        if "error" in response:
+        if response and "error" in response:
             raise BulbException(response["error"])
 
         return response
