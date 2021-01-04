@@ -476,7 +476,7 @@ class Bulb(object):
             properties = [x if x else None for x in properties]
             self._last_properties = dict(zip(requested_properties, properties))
         elif ssdp_fallback:
-            capabilities = self.get_capabilities(2)
+            capabilities = self.get_capabilities()
             self._last_properties = {k: capabilities[k] for k in requested_properties if k in capabilities}
 
         if self._last_properties.get("power") == "off":
