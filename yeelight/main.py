@@ -468,10 +468,13 @@ class Bulb(object):
             return self._last_properties
 
         response = self.send_command("get_prop", requested_properties)
-        properties = response["result"]
-        properties = [x if x else None for x in properties]
-
-        self._last_properties = dict(zip(requested_properties, properties))
+        if (response is not None and "result" in response):
+            properties = response["result"]
+            properties = [x if x else None for x in properties]
+            self._last_properties = dict(zip(requested_properties, properties))
+        else:
+            capabilities = self.get_capabilities(2)
+            self._last_properties = {k:capabilities[k] for k in requested_properties if k in capabilities}
 
         if self._last_properties.get("power") == "off":
             cb = "0"
