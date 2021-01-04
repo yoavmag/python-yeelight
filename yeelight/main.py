@@ -446,6 +446,7 @@ class Bulb(object):
             "nl_br",
             "active_mode",
         ],
+        ssdp_fallback=False,
     ):
         """
         Retrieve and return the properties of the bulb.
@@ -458,6 +459,8 @@ class Bulb(object):
 
         :param list requested_properties: The list of properties to request from the bulb.
                                           By default, this does not include ``flow_params``.
+        :param bool ssdp_fallback: Fallback to SSDP should get_prop fail,
+                                    does not work in all network environment, default = False
 
         :returns: A dictionary of param: value items.
         :rtype: dict
@@ -468,13 +471,13 @@ class Bulb(object):
             return self._last_properties
 
         response = self.send_command("get_prop", requested_properties)
-        if (response is not None and "result" in response):
+        if response is not None and "result" in response:
             properties = response["result"]
             properties = [x if x else None for x in properties]
             self._last_properties = dict(zip(requested_properties, properties))
-        else:
+        elif ssdp_fallback:
             capabilities = self.get_capabilities(2)
-            self._last_properties = {k:capabilities[k] for k in requested_properties if k in capabilities}
+            self._last_properties = {k: capabilities[k] for k in requested_properties if k in capabilities}
 
         if self._last_properties.get("power") == "off":
             cb = "0"
