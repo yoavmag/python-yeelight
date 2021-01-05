@@ -5,6 +5,8 @@
 
 ### Features
 
+* Add SSDP fallback to the get_props method. [Johnnie Ho]
+
 * Drop support for anything less than Python 3.4 (including 2.x) [Stavros Korokithakis]
 
 * Add the color4 bulb specs (closes #60) [Stavros Korokithakis]
