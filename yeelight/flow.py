@@ -52,7 +52,8 @@ class Flow(object):
         # Note, main depends on us, so we cannot import BulbException here.
         if len(self.transitions) > 9:
             _LOGGER.warning(
-                "The bulb seems to support up to 9 transitions. Your %s might fail." % len(self.transitions)
+                "The bulb seems to support up to 9 transitions. Your %s might fail."
+                % len(self.transitions)
             )
 
     @property
@@ -62,7 +63,9 @@ class Flow(object):
 
         :rtype: list
         """
-        expr = chain.from_iterable(transition.as_list() for transition in self.transitions)
+        expr = chain.from_iterable(
+            transition.as_list() for transition in self.transitions
+        )
         expr = ", ".join(str(value) for value in expr)
         return expr
 
@@ -157,7 +160,9 @@ class HSVTransition(FlowTransition):
         hue = _clamp(self.hue, 0, 359) / 359.0
         saturation = max(0, min(100, self.saturation)) / 100.0
 
-        red, green, blue = [int(round(col * 255)) for col in colorsys.hsv_to_rgb(hue, saturation, 1)]
+        red, green, blue = [
+            int(round(col * 255)) for col in colorsys.hsv_to_rgb(hue, saturation, 1)
+        ]
         return red * 65536 + green * 256 + blue
 
     def __repr__(self):

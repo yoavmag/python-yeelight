@@ -92,7 +92,16 @@ class FunctionMaker(object):
     # Atomic get-and-increment provided by the GIL
     _compile_count = itertools.count()
 
-    def __init__(self, func=None, name=None, signature=None, defaults=None, doc=None, module=None, funcdict=None):
+    def __init__(
+        self,
+        func=None,
+        name=None,
+        signature=None,
+        defaults=None,
+        doc=None,
+        module=None,
+        funcdict=None,
+    ):
         self.shortsignature = signature
         if func:
             # func can be a class or a callable, but not an instance method
@@ -104,14 +113,21 @@ class FunctionMaker(object):
             if inspect.isfunction(func):
                 argspec = getfullargspec(func)
                 self.annotations = getattr(func, "__annotations__", {})
-                for a in ("args", "varargs", "varkw", "defaults", "kwonlyargs", "kwonlydefaults"):
+                for a in (
+                    "args",
+                    "varargs",
+                    "varkw",
+                    "defaults",
+                    "kwonlyargs",
+                    "kwonlydefaults",
+                ):
                     setattr(self, a, getattr(argspec, a))
                 for i, arg in enumerate(self.args):
                     setattr(self, "arg%d" % i, arg)
                 if sys.version < "3":  # easy way
-                    self.shortsignature = self.signature = inspect.formatargspec(formatvalue=lambda val: "", *argspec)[
-                        1:-1
-                    ]
+                    self.shortsignature = self.signature = inspect.formatargspec(
+                        formatvalue=lambda val: "", *argspec
+                    )[1:-1]
                 else:  # Python 3 way
                     allargs = list(self.args)
                     allshortargs = list(self.args)
@@ -172,7 +188,9 @@ class FunctionMaker(object):
         if mo is None:
             raise SyntaxError("not a valid function template\n%s" % src)
         name = mo.group(1)  # extract the function name
-        names = set([name] + [arg.strip(" *") for arg in self.shortsignature.split(",")])
+        names = set(
+            [name] + [arg.strip(" *") for arg in self.shortsignature.split(",")]
+        )
         for n in names:
             if n in ("_func_", "_call_"):
                 raise NameError("%s is overridden in\n%s" % (n, src))
@@ -198,7 +216,17 @@ class FunctionMaker(object):
         return func
 
     @classmethod
-    def create(cls, obj, body, evaldict, defaults=None, doc=None, module=None, addsource=True, **attrs):
+    def create(
+        cls,
+        obj,
+        body,
+        evaldict,
+        defaults=None,
+        doc=None,
+        module=None,
+        addsource=True,
+        **attrs
+    ):
         """
         Create a function from the strings name, signature and body.
         evaldict is the evaluation dictionary. If addsource is true an
@@ -215,7 +243,9 @@ class FunctionMaker(object):
             func = obj
         self = cls(func, name, signature, defaults, doc, module)
         ibody = "\n".join("    " + line for line in body.splitlines())
-        return self.make("def %(name)s(%(signature)s):\n" + ibody, evaldict, addsource, **attrs)
+        return self.make(
+            "def %(name)s(%(signature)s):\n" + ibody, evaldict, addsource, **attrs
+        )
 
 
 def decorate(func, caller):
@@ -223,7 +253,9 @@ def decorate(func, caller):
     decorate(func, caller) decorates a function using a caller.
     """
     evaldict = dict(_call_=caller, _func_=func)
-    fun = FunctionMaker.create(func, "return _call_(_func_, %(shortsignature)s)", evaldict, __wrapped__=func)
+    fun = FunctionMaker.create(
+        func, "return _call_(_func_, %(shortsignature)s)", evaldict, __wrapped__=func
+    )
     if hasattr(func, "__qualname__"):
         fun.__qualname__ = func.__qualname__
     return fun
@@ -237,9 +269,9 @@ def decorator(caller, _func=None):
     # else return a decorator function
     if inspect.isclass(caller):
         name = caller.__name__.lower()
-        doc = "decorator(%s) converts functions/generators into " "factories of %s objects" % (
-            caller.__name__,
-            caller.__name__,
+        doc = (
+            "decorator(%s) converts functions/generators into "
+            "factories of %s objects" % (caller.__name__, caller.__name__,)
         )
     elif inspect.isfunction(caller):
         if caller.__name__ == "<lambda>":
@@ -273,7 +305,10 @@ class ContextManager(_GeneratorContextManager):
     def __call__(self, func):
         """Context manager decorator"""
         return FunctionMaker.create(
-            func, "with _self_: return _func_(%(shortsignature)s)", dict(_self_=self, _func_=func), __wrapped__=func
+            func,
+            "with _self_: return _func_(%(shortsignature)s)",
+            dict(_self_=self, _func_=func),
+            __wrapped__=func,
         )
 
 
@@ -329,7 +364,10 @@ def dispatch_on(*dispatch_args):
     def check(arguments, wrong=operator.ne, msg=""):
         """Make sure one passes the expected number of arguments"""
         if wrong(len(arguments), len(dispatch_args)):
-            raise TypeError("Expected %d arguments, got %d%s" % (len(dispatch_args), len(arguments), msg))
+            raise TypeError(
+                "Expected %d arguments, got %d%s"
+                % (len(dispatch_args), len(arguments), msg)
+            )
 
     def gen_func_dec(func):
         """Decorator turning a function into a generic function"""

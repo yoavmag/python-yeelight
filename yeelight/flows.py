@@ -52,7 +52,11 @@ def pulse(red, green, blue, duration=250, brightness=100, count=1):
     :returns: A Flow consisting of 2 transitions, after which the bulb returns to its previous state.
     :rtype: Flow
     """
-    return Flow(count, action=Action.recover, transitions=transitions.pulse(red, green, blue, duration, brightness))
+    return Flow(
+        count,
+        action=Action.recover,
+        transitions=transitions.pulse(red, green, blue, duration, brightness),
+    )
 
 
 def strobe_color(brightness=100):
@@ -64,7 +68,9 @@ def strobe_color(brightness=100):
     :returns: An infinite Flow consisting of 6 transitions.
     :rtype: Flow
     """
-    return Flow(count=0, action=Action.recover, transitions=transitions.strobe_color(brightness))
+    return Flow(
+        count=0, action=Action.recover, transitions=transitions.strobe_color(brightness)
+    )
 
 
 def alarm(duration=250):
@@ -89,7 +95,11 @@ def police(duration=300, brightness=100):
     :returns: An infinite Flow consisting of 2 transitions.
     :rtype: Flow
     """
-    return Flow(count=0, action=Action.recover, transitions=transitions.police(duration, brightness))
+    return Flow(
+        count=0,
+        action=Action.recover,
+        transitions=transitions.police(duration, brightness),
+    )
 
 
 def police2(duration=250, brightness=100):
@@ -102,7 +112,11 @@ def police2(duration=250, brightness=100):
     :returns: An infinite Flow consisting of 8 transitions.
     :rtype: Flow
     """
-    return Flow(count=0, action=Action.recover, transitions=transitions.police2(duration, brightness))
+    return Flow(
+        count=0,
+        action=Action.recover,
+        transitions=transitions.police2(duration, brightness),
+    )
 
 
 def lsd(duration=3000, brightness=100):
@@ -115,7 +129,11 @@ def lsd(duration=3000, brightness=100):
     :returns: An infinite Flow consisting of 5 transitions.
     :rtype: Flow
     """
-    return Flow(count=0, action=Action.recover, transitions=transitions.lsd(duration, brightness))
+    return Flow(
+        count=0,
+        action=Action.recover,
+        transitions=transitions.lsd(duration, brightness),
+    )
 
 
 def christmas(duration=250, brightness=100, sleep=3000):
@@ -129,7 +147,11 @@ def christmas(duration=250, brightness=100, sleep=3000):
     :returns: An infinite Flow consisting of 4 transitions.
     :rtype: Flow
     """
-    return Flow(count=0, action=Action.recover, transitions=transitions.christmas(duration, brightness, sleep))
+    return Flow(
+        count=0,
+        action=Action.recover,
+        transitions=transitions.christmas(duration, brightness, sleep),
+    )
 
 
 def rgb(duration=250, brightness=100, sleep=3000):
@@ -143,7 +165,11 @@ def rgb(duration=250, brightness=100, sleep=3000):
     :returns: An infinite Flow consisting of 6 transitions.
     :rtype: Flow
     """
-    return Flow(count=0, action=Action.recover, transitions=transitions.rgb(duration, brightness, sleep))
+    return Flow(
+        count=0,
+        action=Action.recover,
+        transitions=transitions.rgb(duration, brightness, sleep),
+    )
 
 
 def random_loop(duration=750, brightness=100, count=9):
@@ -157,7 +183,11 @@ def random_loop(duration=750, brightness=100, count=9):
     :returns: An infinite Flow consisting of up to 9 transitions.
     :rtype: Flow
     """
-    return Flow(count=0, action=Action.recover, transitions=transitions.random_loop(duration, brightness, count))
+    return Flow(
+        count=0,
+        action=Action.recover,
+        transitions=transitions.random_loop(duration, brightness, count),
+    )
 
 
 def slowdown(duration=2000, brightness=100, count=8):
@@ -171,7 +201,11 @@ def slowdown(duration=2000, brightness=100, count=8):
     :returns: An infinite Flow consisting of up to 8 transitions.
     :rtype: Flow
     """
-    return Flow(count=0, action=Action.recover, transitions=transitions.slowdown(duration, brightness, count))
+    return Flow(
+        count=0,
+        action=Action.recover,
+        transitions=transitions.slowdown(duration, brightness, count),
+    )
 
 
 def home(duration=500, brightness=80):
@@ -184,7 +218,9 @@ def home(duration=500, brightness=80):
     :returns: An infinite Flow consisting of 1 transition.
     :rtype: Flow
     """
-    transition = [TemperatureTransition(degrees=3200, duration=duration, brightness=brightness)]
+    transition = [
+        TemperatureTransition(degrees=3200, duration=duration, brightness=brightness)
+    ]
     return Flow(count=0, action=Action.recover, transitions=transition)
 
 
@@ -198,7 +234,9 @@ def night_mode(duration=500, brightness=1):
     :returns: An infinite Flow consisting of 1 transition.
     :rtype: Flow
     """
-    transition = [RGBTransition(0xFF, 0x99, 0x00, duration=duration, brightness=brightness)]
+    transition = [
+        RGBTransition(0xFF, 0x99, 0x00, duration=duration, brightness=brightness)
+    ]
     return Flow(count=0, action=Action.recover, transitions=transition)
 
 
@@ -212,7 +250,9 @@ def date_night(duration=500, brightness=50):
     :returns: An infinite Flow consisting of 1 transition.
     :rtype: Flow
     """
-    transition = [RGBTransition(0xFF, 0x66, 0x00, duration=duration, brightness=brightness)]
+    transition = [
+        RGBTransition(0xFF, 0x66, 0x00, duration=duration, brightness=brightness)
+    ]
     return Flow(count=0, action=Action.recover, transitions=transition)
 
 
@@ -226,7 +266,11 @@ def movie(duration=500, brightness=50):
     :returns: An infinite Flow consisting of 1 transition.
     :rtype: Flow
     """
-    transition = [RGBTransition(red=0x14, green=0x14, blue=0x32, duration=duration, brightness=brightness)]
+    transition = [
+        RGBTransition(
+            red=0x14, green=0x14, blue=0x32, duration=duration, brightness=brightness
+        )
+    ]
     return Flow(count=0, action=Action.recover, transitions=transition)
 
 

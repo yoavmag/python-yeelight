@@ -117,22 +117,34 @@ class Tests(unittest.TestCase):
         self.bulb.power_mode = enums.PowerMode.MOONLIGHT
         self.bulb.turn_on()
         self.assertEqual(self.socket.sent["method"], "set_power")
-        self.assertEqual(self.socket.sent["params"], ["on", "smooth", 300, enums.PowerMode.MOONLIGHT.value])
+        self.assertEqual(
+            self.socket.sent["params"],
+            ["on", "smooth", 300, enums.PowerMode.MOONLIGHT.value],
+        )
 
     def test_turn_on5(self):
         self.bulb.turn_on(power_mode=enums.PowerMode.MOONLIGHT)
         self.assertEqual(self.socket.sent["method"], "set_power")
-        self.assertEqual(self.socket.sent["params"], ["on", "smooth", 300, enums.PowerMode.MOONLIGHT.value])
+        self.assertEqual(
+            self.socket.sent["params"],
+            ["on", "smooth", 300, enums.PowerMode.MOONLIGHT.value],
+        )
 
     def test_set_power_mode1(self):
         self.bulb.set_power_mode(enums.PowerMode.MOONLIGHT)
         self.assertEqual(self.socket.sent["method"], "set_power")
-        self.assertEqual(self.socket.sent["params"], ["on", "smooth", 300, enums.PowerMode.MOONLIGHT.value])
+        self.assertEqual(
+            self.socket.sent["params"],
+            ["on", "smooth", 300, enums.PowerMode.MOONLIGHT.value],
+        )
 
     def test_set_power_mode2(self):
         self.bulb.set_power_mode(enums.PowerMode.NORMAL)
         self.assertEqual(self.socket.sent["method"], "set_power")
-        self.assertEqual(self.socket.sent["params"], ["on", "smooth", 300, enums.PowerMode.NORMAL.value])
+        self.assertEqual(
+            self.socket.sent["params"],
+            ["on", "smooth", 300, enums.PowerMode.NORMAL.value],
+        )
 
     def test_set_power_mode3(self):
         self.bulb.set_power_mode(enums.PowerMode.LAST)
@@ -159,11 +171,17 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.socket.sent["params"], [2700, "smooth", 300])
 
     def test_start_flow(self):
-        transitions = [TemperatureTransition(1700, duration=40000), TemperatureTransition(6500, duration=40000)]
+        transitions = [
+            TemperatureTransition(1700, duration=40000),
+            TemperatureTransition(6500, duration=40000),
+        ]
         flow = Flow(count=1, action=Action.stay, transitions=transitions)
         self.bulb.start_flow(flow)
         self.assertEqual(self.socket.sent["method"], "start_cf")
-        self.assertEqual(self.socket.sent["params"], [2, 1, "40000, 2, 1700, 100, 40000, 2, 6500, 100"])
+        self.assertEqual(
+            self.socket.sent["params"],
+            [2, 1, "40000, 2, 1700, 100, 40000, 2, 6500, 100"],
+        )
 
     def test_set_scene_color(self):
         self.bulb.set_scene(SceneClass.COLOR, 255, 255, 0, 10)
@@ -171,7 +189,9 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.socket.sent["params"], ["color", 16776960, 10])
 
     def test_set_scene_color_ambilight(self):
-        self.bulb.set_scene(SceneClass.COLOR, 255, 255, 0, 10, light_type=LightType.Ambient)
+        self.bulb.set_scene(
+            SceneClass.COLOR, 255, 255, 0, 10, light_type=LightType.Ambient
+        )
         self.assertEqual(self.socket.sent["method"], "bg_set_scene")
         self.assertEqual(self.socket.sent["params"], ["color", 16776960, 10])
 
@@ -186,11 +206,17 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.socket.sent["params"], ["hsv", 200, 100, 10])
 
     def test_set_scene_color_flow(self):
-        transitions = [TemperatureTransition(1700, duration=40000), TemperatureTransition(6500, duration=40000)]
+        transitions = [
+            TemperatureTransition(1700, duration=40000),
+            TemperatureTransition(6500, duration=40000),
+        ]
         flow = Flow(count=1, action=Action.stay, transitions=transitions)
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
-        self.assertEqual(self.socket.sent["params"], ["cf", 2, 1, "40000, 2, 1700, 100, 40000, 2, 6500, 100"])
+        self.assertEqual(
+            self.socket.sent["params"],
+            ["cf", 2, 1, "40000, 2, 1700, 100, 40000, 2, 6500, 100"],
+        )
 
     def test_set_scene_auto_delay_off(self):
         self.bulb.set_scene(SceneClass.AUTO_DELAY_OFF, 20, 1)
@@ -202,7 +228,13 @@ class Tests(unittest.TestCase):
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(
-            self.socket.sent["params"], ["cf", 3, 1, "50, 1, 16731392, 1, 360000, 2, 1700, 10, 540000, 2, 2700, 100"]
+            self.socket.sent["params"],
+            [
+                "cf",
+                3,
+                1,
+                "50, 1, 16731392, 1, 360000, 2, 1700, 10, 540000, 2, 2700, 100",
+            ],
         )
 
     def test_sunset(self):
@@ -210,14 +242,18 @@ class Tests(unittest.TestCase):
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(
-            self.socket.sent["params"], ["cf", 3, 2, "50, 2, 2700, 10, 180000, 2, 1700, 5, 420000, 1, 16731136, 1"]
+            self.socket.sent["params"],
+            ["cf", 3, 2, "50, 2, 2700, 10, 180000, 2, 1700, 5, 420000, 1, 16731136, 1"],
         )
 
     def test_romance(self):
         flow = flows.romance()
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
-        self.assertEqual(self.socket.sent["params"], ["cf", 0, 1, "4000, 1, 5838189, 1, 4000, 1, 6689834, 1"])
+        self.assertEqual(
+            self.socket.sent["params"],
+            ["cf", 0, 1, "4000, 1, 5838189, 1, 4000, 1, 6689834, 1"],
+        )
 
     def test_happy_birthday(self):
         flow = flows.happy_birthday()
@@ -225,7 +261,12 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(
             self.socket.sent["params"],
-            ["cf", 0, 1, "1996, 1, 14438425, 80, 1996, 1, 14448670, 80, 1996, 1, 11153940, 80"],
+            [
+                "cf",
+                0,
+                1,
+                "1996, 1, 14438425, 80, 1996, 1, 14448670, 80, 1996, 1, 11153940, 80",
+            ],
         )
 
     def test_candle_flicker(self):
@@ -252,19 +293,25 @@ class Tests(unittest.TestCase):
         flow = flows.night_mode()
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
-        self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 1, 16750848, 1"])
+        self.assertEqual(
+            self.socket.sent["params"], ["cf", 0, 0, "500, 1, 16750848, 1"]
+        )
 
     def test_date_night(self):
         flow = flows.date_night()
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
-        self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 1, 16737792, 50"])
+        self.assertEqual(
+            self.socket.sent["params"], ["cf", 0, 0, "500, 1, 16737792, 50"]
+        )
 
     def test_movie(self):
         flow = flows.movie()
         self.bulb.set_scene(SceneClass.CF, flow)
         self.assertEqual(self.socket.sent["method"], "set_scene")
-        self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 1, 1315890, 50"])
+        self.assertEqual(
+            self.socket.sent["params"], ["cf", 0, 0, "500, 1, 1315890, 50"]
+        )
 
     def test_notification(self):
         notification_event = threading.Event()

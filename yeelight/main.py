@@ -27,29 +27,121 @@ except ImportError:
 _LOGGER = logging.getLogger(__name__)
 
 _MODEL_SPECS = {
-    "bslamp1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
-    "bslamp2": {"color_temp": {"min": 1700, "max": 6500}, "night_light": True, "background_light": False},
-    "ceil26": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
-    "ceiling10": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": True},
-    "ceiling13": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
-    "ceiling15": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
-    "ceiling19": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": True},
-    "ceiling1": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
-    "ceiling20": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": True},
-    "ceiling2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
-    "ceiling3": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
-    "ceiling4": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": True},
-    "ceiling5": {"color_temp": {"min": 2700, "max": 5700}, "night_light": True, "background_light": False},
-    "ceiling6": {"color_temp": {"min": 2700, "max": 6500}, "night_light": True, "background_light": False},
-    "color1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
-    "color2": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
-    "color4": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
-    "color": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
-    "ct_bulb": {"color_temp": {"min": 2700, "max": 6500}, "night_light": False, "background_light": False},
-    "lamp4": {"color_temp": {"min": 2600, "max": 5000}, "night_light": False, "background_light": False},
-    "mono1": {"color_temp": {"min": 2700, "max": 2700}, "night_light": False, "background_light": False},
-    "mono": {"color_temp": {"min": 2700, "max": 2700}, "night_light": False, "background_light": False},
-    "strip1": {"color_temp": {"min": 1700, "max": 6500}, "night_light": False, "background_light": False},
+    "bslamp1": {
+        "color_temp": {"min": 1700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
+    "bslamp2": {
+        "color_temp": {"min": 1700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
+    "ceil26": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
+    "ceiling10": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": True,
+    },
+    "ceiling13": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
+    "ceiling15": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
+    "ceiling19": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": True,
+    },
+    "ceiling1": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
+    "ceiling20": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": True,
+    },
+    "ceiling2": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
+    "ceiling3": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
+    "ceiling4": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": True,
+    },
+    "ceiling5": {
+        "color_temp": {"min": 2700, "max": 5700},
+        "night_light": True,
+        "background_light": False,
+    },
+    "ceiling6": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
+    "color1": {
+        "color_temp": {"min": 1700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
+    "color2": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
+    "color4": {
+        "color_temp": {"min": 1700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
+    "color": {
+        "color_temp": {"min": 1700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
+    "ct_bulb": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
+    "lamp4": {
+        "color_temp": {"min": 2600, "max": 5000},
+        "night_light": False,
+        "background_light": False,
+    },
+    "mono1": {
+        "color_temp": {"min": 2700, "max": 2700},
+        "night_light": False,
+        "background_light": False,
+    },
+    "mono": {
+        "color_temp": {"min": 2700, "max": 2700},
+        "night_light": False,
+        "background_light": False,
+    },
+    "strip1": {
+        "color_temp": {"min": 1700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
 }
 
 
@@ -110,9 +202,13 @@ def _command(f, *args, **kw):
             }
             # Handle toggling separately, as it depends on a previous power state.
             if method == "toggle":
-                self._last_properties["power"] = "on" if self._last_properties["power"] == "off" else "off"
+                self._last_properties["power"] = (
+                    "on" if self._last_properties["power"] == "off" else "off"
+                )
             if method == "bg_toggle":
-                self._last_properties["bg_power"] = "on" if self._last_properties["bg_power"] == "off" else "off"
+                self._last_properties["bg_power"] = (
+                    "on" if self._last_properties["bg_power"] == "off" else "off"
+                )
             # dev_toggle toggle both lights depending on the MAIN light power status.
             if method == "dev_toggle":
                 new_state = "on" if self._last_properties["power"] == "off" else "off"
@@ -120,15 +216,25 @@ def _command(f, *args, **kw):
                 self._last_properties["bg_power"] = new_state
             elif method in action_property_map:
                 set_prop = action_property_map[method]
-                update_props = {set_prop[prop]: params[prop] for prop in range(len(set_prop))}
+                update_props = {
+                    set_prop[prop]: params[prop] for prop in range(len(set_prop))
+                }
                 _LOGGER.debug("Music mode cache update: %s", update_props)
                 self._last_properties.update(update_props)
         # Add the effect parameters.
         params += [effect, duration]
         # Add power_mode parameter.
-        if method == "set_power" and params[0] == "on" and power_mode.value != PowerMode.LAST:
+        if (
+            method == "set_power"
+            and params[0] == "on"
+            and power_mode.value != PowerMode.LAST
+        ):
             params += [power_mode.value]
-        if method == "bg_set_power" and params[0] == "on" and power_mode.value != PowerMode.LAST:
+        if (
+            method == "bg_set_power"
+            and params[0] == "on"
+            and power_mode.value != PowerMode.LAST
+        ):
             params += [power_mode.value]
 
     result = self.send_command(method, params).get("result", [])
@@ -170,7 +276,9 @@ def discover_bulbs(timeout=2, interface=False):
             continue
 
         capabilities = filter_lower_case_keys(capabilities)
-        bulbs.append({"ip": bulb_ip[0], "port": bulb_ip[1], "capabilities": capabilities})
+        bulbs.append(
+            {"ip": bulb_ip[0], "port": bulb_ip[1], "capabilities": capabilities}
+        )
         bulb_ips.add(bulb_ip)
 
     return bulbs
@@ -189,7 +297,14 @@ class BulbException(Exception):
 
 class Bulb(object):
     def __init__(
-        self, ip, port=55443, effect="smooth", duration=300, auto_on=False, power_mode=PowerMode.LAST, model=None
+        self,
+        ip,
+        port=55443,
+        effect="smooth",
+        duration=300,
+        auto_on=False,
+        power_mode=PowerMode.LAST,
+        model=None,
     ):
         """
         The main controller class of a physical YeeLight bulb.
@@ -337,7 +452,9 @@ class Bulb(object):
         :rtype: yeelight.BulbType
         :return: The bulb's type.
         """
-        if not self._last_properties or any(name not in self.last_properties for name in ["ct", "rgb"]):
+        if not self._last_properties or any(
+            name not in self.last_properties for name in ["ct", "rgb"]
+        ):
             return BulbType.Unknown
         if self.last_properties["rgb"] is None and self.last_properties["ct"]:
             if self.last_properties["bg_power"] is not None:
@@ -345,7 +462,8 @@ class Bulb(object):
             else:
                 return BulbType.WhiteTemp
         if all(
-            name in self.last_properties and self.last_properties[name] is None for name in ["ct", "rgb", "hue", "sat"]
+            name in self.last_properties and self.last_properties[name] is None
+            for name in ["ct", "rgb", "hue", "sat"]
         ):
             return BulbType.White
         else:
@@ -389,7 +507,9 @@ class Bulb(object):
         """
         try:
             self._is_listening = True
-            self._notification_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._notification_socket = socket.socket(
+                socket.AF_INET, socket.SOCK_STREAM
+            )
             self._notification_socket.setblocking(True)
             self._notification_socket.connect((self._ip, self._port))
             while self._notification_socket is not None:
@@ -478,7 +598,9 @@ class Bulb(object):
             self._last_properties = dict(zip(requested_properties, properties))
         elif ssdp_fallback:
             capabilities = self.get_capabilities()
-            self._last_properties = {k: capabilities[k] for k in requested_properties if k in capabilities}
+            self._last_properties = {
+                k: capabilities[k] for k in requested_properties if k in capabilities
+            }
 
         if self._last_properties.get("power") == "off":
             cb = "0"
@@ -515,7 +637,9 @@ class Bulb(object):
             # create a new one.
             self.__socket.close()
             self.__socket = None
-            raise_from(BulbException("A socket error occurred when sending the command."), ex)
+            raise_from(
+                BulbException("A socket error occurred when sending the command."), ex
+            )
 
         if self._music_mode:
             # We're in music mode, nothing else will happen.
@@ -550,7 +674,12 @@ class Bulb(object):
                 else:
                     self._last_properties.update(line["params"])
 
-        if method == "set_music" and params == [0] and "error" in response and response["error"]["code"] == -5000:
+        if (
+            method == "set_music"
+            and params == [0]
+            and "error" in response
+            and response["error"]["code"] == -5000
+        ):
             # The bulb seems to throw an error for no reason when stopping music mode,
             # it doesn't affect operation and we can't do anything about it, so we might
             # as well swallow it.
@@ -572,7 +701,11 @@ class Bulb(object):
         """
         self.ensure_on()
 
-        return ("set_ct_abx", [self._clamp_color_temp(degrees)], dict(kwargs, light_type=light_type))
+        return (
+            "set_ct_abx",
+            [self._clamp_color_temp(degrees)],
+            dict(kwargs, light_type=light_type),
+        )
 
     @_command
     def set_rgb(self, red, green, blue, light_type=LightType.Main, **kwargs):
@@ -587,7 +720,11 @@ class Bulb(object):
         """
         self.ensure_on()
 
-        return ("set_rgb", [rgb_to_yeelight(red, green, blue)], dict(kwargs, light_type=light_type))
+        return (
+            "set_rgb",
+            [rgb_to_yeelight(red, green, blue)],
+            dict(kwargs, light_type=light_type),
+        )
 
     @_command
     def set_adjust(self, action, prop, **kwargs):
@@ -639,8 +776,17 @@ class Bulb(object):
 
             hue = _clamp(hue, 0, 359) / 359.0
             saturation = _clamp(saturation, 0, 100) / 100.0
-            rgb = rgb_to_yeelight(*[int(round(col * 255)) for col in colorsys.hsv_to_rgb(hue, saturation, 1)])
-            return ("start_cf", [1, 1, "%s, 1, %s, %s" % (duration, rgb, value)], dict(kwargs, light_type=light_type))
+            rgb = rgb_to_yeelight(
+                *[
+                    int(round(col * 255))
+                    for col in colorsys.hsv_to_rgb(hue, saturation, 1)
+                ]
+            )
+            return (
+                "start_cf",
+                [1, 1, "%s, 1, %s, %s" % (duration, rgb, value)],
+                dict(kwargs, light_type=light_type),
+            )
 
     @_command
     def set_brightness(self, brightness, light_type=LightType.Main, **kwargs):
@@ -720,7 +866,11 @@ class Bulb(object):
 
         self.ensure_on()
 
-        return ("start_cf", flow.as_start_flow_params, dict(kwargs, light_type=light_type))
+        return (
+            "start_cf",
+            flow.as_start_flow_params,
+            dict(kwargs, light_type=light_type),
+        )
 
     @_command
     def stop_flow(self, light_type=LightType.Main, **kwargs):
@@ -788,7 +938,9 @@ class Bulb(object):
         elif scene_class == SceneClass.AUTO_DELAY_OFF:
             scene_args += args
         else:
-            raise ValueError("Scene class argument is unknown. Please use one from yeelight.SceneClass.")
+            raise ValueError(
+                "Scene class argument is unknown. Please use one from yeelight.SceneClass."
+            )
 
         return "set_scene", scene_args, dict(kwargs, light_type=light_type)
 
@@ -885,7 +1037,9 @@ class Bulb(object):
         return "cron_del", [event_type.value], kwargs
 
     def __repr__(self):
-        return "Bulb<{ip}:{port}, type={type}>".format(ip=self._ip, port=self._port, type=self.bulb_type)
+        return "Bulb<{ip}:{port}, type={type}>".format(
+            ip=self._ip, port=self._port, type=self.bulb_type
+        )
 
     def set_power_mode(self, mode):
         """

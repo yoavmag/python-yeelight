@@ -38,7 +38,10 @@ def temp():
     :returns: A list of transitions.
     :rtype: list
     """
-    transitions = [TemperatureTransition(1700, duration=40000), TemperatureTransition(6500, duration=40000)]
+    transitions = [
+        TemperatureTransition(1700, duration=40000),
+        TemperatureTransition(6500, duration=40000),
+    ]
     return transitions
 
 
@@ -49,7 +52,10 @@ def strobe():
     :returns: A list of transitions.
     :rtype: list
     """
-    transitions = [HSVTransition(0, 0, duration=50, brightness=100), HSVTransition(0, 0, duration=50, brightness=1)]
+    transitions = [
+        HSVTransition(0, 0, duration=50, brightness=100),
+        HSVTransition(0, 0, duration=50, brightness=1),
+    ]
     return transitions
 
 
@@ -164,7 +170,10 @@ def lsd(duration=3000, brightness=100):
     :rtype: list
     """
     hs_values = [(3, 85), (20, 90), (55, 95), (93, 50), (198, 97)]
-    return [HSVTransition(hue, saturation, duration=duration, brightness=brightness) for hue, saturation in hs_values]
+    return [
+        HSVTransition(hue, saturation, duration=duration, brightness=brightness)
+        for hue, saturation in hs_values
+    ]
 
 
 def christmas(duration=250, brightness=100, sleep=3000):
@@ -222,7 +231,10 @@ def random_loop(duration=750, brightness=100, count=9):
     """
     count = _clamp(count, 1, 9)
     transitions = [
-        HSVTransition(random.randint(0, 360), 100, duration=duration, brightness=brightness) for _ in range(count)
+        HSVTransition(
+            random.randint(0, 360), 100, duration=duration, brightness=brightness
+        )
+        for _ in range(count)
     ]
     return transitions
 
@@ -240,7 +252,9 @@ def slowdown(duration=2000, brightness=100, count=8):
     """
     count = _clamp(count, 1, 8)
     transitions = [
-        HSVTransition(random.randint(0, 360), 100, duration=(duration * x), brightness=brightness)
+        HSVTransition(
+            random.randint(0, 360), 100, duration=(duration * x), brightness=brightness
+        )
         for x in range(1, count + 1)
     ]
     return transitions

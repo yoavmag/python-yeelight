@@ -38,13 +38,24 @@ def send_discovery_packet(timeout=2, interface=False, ip_address="239.255.255.25
     :return: Socket used to send packet.
 
     """
-    msg = "\r\n".join(["M-SEARCH * HTTP/1.1", "HOST: " + ip_address + ":1982", 'MAN: "ssdp:discover"', "ST: wifi_bulb"])
+    msg = "\r\n".join(
+        [
+            "M-SEARCH * HTTP/1.1",
+            "HOST: " + ip_address + ":1982",
+            'MAN: "ssdp:discover"',
+            "ST: wifi_bulb",
+        ]
+    )
 
     # Set up the UDP socket.
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 32)
     if interface:
-        s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(get_ip_address(interface)))
+        s.setsockopt(
+            socket.IPPROTO_IP,
+            socket.IP_MULTICAST_IF,
+            socket.inet_aton(get_ip_address(interface)),
+        )
     s.settimeout(timeout)
     s.sendto(msg.encode(), (ip_address, 1982))
 
@@ -81,7 +92,9 @@ def parse_capabilities(data):
         ...
     }
     """
-    return dict([x.strip("\r").split(": ") for x in data.decode().split("\n") if ":" in x])
+    return dict(
+        [x.strip("\r").split(": ") for x in data.decode().split("\n") if ":" in x]
+    )
 
 
 def filter_lower_case_keys(dict):
