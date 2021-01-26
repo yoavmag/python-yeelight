@@ -5,6 +5,8 @@
 
 ### Features
 
+* Add lamp4. [Stavros Korokithakis]
+
 * Add SSDP fallback to the get_props method. [Johnnie Ho]
 
 * Drop support for anything less than Python 3.4 (including 2.x) [Stavros Korokithakis]
@@ -18,6 +20,10 @@
 * Add ceiling6 (YLXD08YL) and ceiling19 (YLXD49YL) specs. [Юрий Аузинь]
 
 * Add ceiling15 (YLXD42YL) specs. [Stavros Korokithakis]
+
+### Fixes
+
+* Send newline in new packet, as some version bulbs expect that. [Stavros Korokithakis]
 
 
 ## v0.5.4 (2020-10-08)

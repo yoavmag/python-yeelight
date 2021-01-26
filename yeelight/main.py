@@ -509,6 +509,7 @@ class Bulb(object):
 
         try:
             self._socket.send((json.dumps(command) + "\r\n").encode("utf8"))
+            self._socket.send(b" ")
         except socket.error as ex:
             # Some error occurred, remove this socket in hopes that we can later
             # create a new one.
