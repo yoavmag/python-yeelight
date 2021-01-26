@@ -631,6 +631,8 @@ class Bulb(object):
 
         try:
             self._socket.send((json.dumps(command) + "\r\n").encode("utf8"))
+            # This is a workaround for some firmware versions, it seems to help with the
+            # "Bulb closed the connection" issue. More discussion can be found in issue #61.
             self._socket.send(b" ")
         except socket.error as ex:
             # Some error occurred, remove this socket in hopes that we can later
