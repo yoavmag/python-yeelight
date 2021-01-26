@@ -27,7 +27,9 @@ class SocketMock(object):
         self.received = received
 
     def send(self, data):
-        self.sent = json.loads(data.decode("utf8"))
+        if data != b" ":
+            # Check that this is the first sent packet, and not the "empty space" workaround one.
+            self.sent = json.loads(data.decode("utf8"))
 
     def recv(self, length):
         return self.received

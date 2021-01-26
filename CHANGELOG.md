@@ -23,6 +23,8 @@
 
 ### Fixes
 
+* Send a space in a new packet, to work around "Connection closed" errors. [Stavros Korokithakis]
+
 * Send newline in new packet, as some version bulbs expect that. [Stavros Korokithakis]
 
 
