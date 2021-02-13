@@ -19,7 +19,7 @@ Description
 WiFi RGB LED bulbs through your LAN.
 
 For a command-line utility that uses this library, see `yeecli
-<https://gitlab.com/stavros/yeecli>`.
+<https://gitlab.com/stavros/yeecli>`_.
 
 
 Installation
