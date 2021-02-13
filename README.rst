@@ -18,8 +18,8 @@ Description
 ``yeelight`` is a simple Python library that allows you to control YeeLight
 WiFi RGB LED bulbs through your LAN.
 
-For a command-line utility that uses this library, see
-[yeecli](https://gitlab.com/stavros/yeecli).
+For a command-line utility that uses this library, see `yeecli
+<https://gitlab.com/stavros/yeecli>`.
 
 
 Installation
