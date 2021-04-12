@@ -1,6 +1,11 @@
 image: themattrix/tox
 
+stages:
+  - test
+  - release
+
 static_check:
+  stage: test
   before_script:
     - apt-get update
     - apt-get install -y git
@@ -10,6 +15,7 @@ static_check:
     - $(find /.pyenv/versions -name pre-commit) run -a --hook-stage=manual
 
 tests:
+  stage: test
   script:
   - tox
 
@@ -23,3 +29,19 @@ docs:
   - pip3.6 install .
   - cd docs/
   - $(find /.pyenv/versions -name sphinx-build) -b html -d build/doctrees -W source build/html
+
+
+pypi:
+  image: python:3.8
+  variables:
+    TWINE_USERNAME: "__token__"
+  stage: release
+  needs: [tests, static_check]
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^v\d+.\d+.\d+$/
+    when: on_success
+  script:
+      - pip install -U twine gitchangelog pystache
+      - gitchangelog
+      - python setup.py sdist bdist_wheel
+      - twine upload dist/*
