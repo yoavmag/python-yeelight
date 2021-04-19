@@ -133,9 +133,9 @@ _MODEL_SPECS = {
         "background_light": False,
     },
     "lamp15": {
-    "color_temp": {"min": 2700, "max": 6500},
-    "night_light": False,
-    "background_light": True,
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": False,
+        "background_light": True,
     },
     "mono1": {
         "color_temp": {"min": 2700, "max": 2700},
