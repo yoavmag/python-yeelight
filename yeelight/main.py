@@ -132,6 +132,11 @@ _MODEL_SPECS = {
         "night_light": False,
         "background_light": False,
     },
+    "lamp15": {
+    "color_temp": {"min": 2700, "max": 6500},
+    "night_light": False,
+    "background_light": True,
+    },
     "mono1": {
         "color_temp": {"min": 2700, "max": 2700},
         "night_light": False,
@@ -461,6 +466,9 @@ class Bulb(object):
             name not in self.last_properties for name in ["ct", "rgb"]
         ):
             return BulbType.Unknown
+        # Manual override for lamp15, see https://gitlab.com/stavros/python-yeelight/-/issues/66
+        if self.model is not None and self.model == "lamp15":
+            return BulbType.WhiteTempMood
         if self.last_properties["rgb"] is None and self.last_properties["ct"]:
             if self.last_properties["bg_power"] is not None:
                 return BulbType.WhiteTempMood
