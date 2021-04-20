@@ -132,6 +132,12 @@ _MODEL_SPECS = {
         "night_light": False,
         "background_light": False,
     },
+    "lamp15": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": False,
+        "background_light": True,
+        "bulb_type": BulbType.WhiteTempMood,
+    },
     "mono1": {
         "color_temp": {"min": 2700, "max": 2700},
         "night_light": False,
@@ -461,6 +467,10 @@ class Bulb(object):
             name not in self.last_properties for name in ["ct", "rgb"]
         ):
             return BulbType.Unknown
+        # Override autodetection if bulb_type provided in _MODEL_SPECS
+        model_specs = self.get_model_specs()
+        if model_specs.get("bulb_type"):
+            return model_specs.get("bulb_type")
         if self.last_properties["rgb"] is None and self.last_properties["ct"]:
             if self.last_properties["bg_power"] is not None:
                 return BulbType.WhiteTempMood
