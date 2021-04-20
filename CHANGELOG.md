@@ -1,6 +1,13 @@
 # Changelog
 
 
+## Unreleased
+
+### Fixes
+
+* Add support for lamp15  (YLTD003) [Caleb Mah]
+
+
 ## v0.6.0 (2021-04-12)
 
 ### Features
