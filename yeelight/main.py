@@ -157,7 +157,7 @@ _MODEL_SPECS = {
         "color_temp": {"min": 2700, "max": 6500},
         "night_light": False,
         "background_light": False,
-    },    
+    },
 }
 
 
