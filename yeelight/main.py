@@ -42,7 +42,7 @@ _MODEL_SPECS = {
         "night_light": True,
         "background_light": False,
     },
-        "ceila": {
+    "ceila": {
         "color_temp": {"min": 2700, "max": 6500},
         "night_light": True,
         "background_light": False,
