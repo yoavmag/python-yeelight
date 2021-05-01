@@ -37,6 +37,11 @@ _MODEL_SPECS = {
         "night_light": True,
         "background_light": False,
     },
+    "bslamp3": {
+        "color_temp": {"min": 1700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
     "ceil26": {
         "color_temp": {"min": 2700, "max": 6500},
         "night_light": True,
@@ -62,6 +67,11 @@ _MODEL_SPECS = {
         "night_light": True,
         "background_light": False,
     },
+    "ceiling18": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
     "ceiling19": {
         "color_temp": {"min": 2700, "max": 6500},
         "night_light": True,
@@ -76,6 +86,11 @@ _MODEL_SPECS = {
         "color_temp": {"min": 2700, "max": 6500},
         "night_light": True,
         "background_light": True,
+    },
+    "ceiling24": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
     },
     "ceiling2": {
         "color_temp": {"min": 2700, "max": 6500},
@@ -132,6 +147,16 @@ _MODEL_SPECS = {
         "night_light": False,
         "background_light": False,
     },
+    "ct2": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
+    "lamp1": {
+        "color_temp": {"min": 2700, "max": 5000},
+        "night_light": False,
+        "background_light": False,
+    },
     "lamp4": {
         "color_temp": {"min": 2600, "max": 5000},
         "night_light": False,
@@ -155,6 +180,11 @@ _MODEL_SPECS = {
     },
     "strip1": {
         "color_temp": {"min": 1700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
+    "strip2": {
+        "color_temp": {"min": 2700, "max": 6500},
         "night_light": False,
         "background_light": False,
     },
