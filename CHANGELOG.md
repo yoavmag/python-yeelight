@@ -3,6 +3,19 @@
 
 ## Unreleased
 
+### Features
+
+* Add support for bslamp3, ceiling18, ceiling24, ct2, lamp1, strip2. [root]
+
+* Add support for ceila (YLXD76YL) [zvldz]
+
+### Fixes
+
+* Add support for strip4 (YLDD03YL) [zvldz]
+
+
+## v0.6.1 (2021-04-20)
+
 ### Fixes
 
 * Add support for lamp15  (YLTD003) [Caleb Mah]

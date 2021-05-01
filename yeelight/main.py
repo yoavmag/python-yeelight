@@ -507,10 +507,16 @@ class Bulb(object):
             name not in self.last_properties for name in ["ct", "rgb"]
         ):
             return BulbType.Unknown
-        # Override autodetection if bulb_type provided in _MODEL_SPECS
-        model_specs = self.get_model_specs()
-        if model_specs.get("bulb_type"):
-            return model_specs.get("bulb_type")
+
+        # Override autodetection if bulb_type is provided in _MODEL_SPECS.
+        # We don't use get_model_specs() here to avoid a possible recursion.
+        if (
+            self.model is not None
+            and self.model in _MODEL_SPECS
+            and "bulb_type" in _MODEL_SPECS[self.model]
+        ):
+            return _MODEL_SPECS[self.model]["bulb_type"]
+
         if self.last_properties["rgb"] is None and self.last_properties["ct"]:
             if self.last_properties["bg_power"] is not None:
                 return BulbType.WhiteTempMood
