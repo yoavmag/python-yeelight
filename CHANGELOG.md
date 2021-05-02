@@ -11,6 +11,8 @@
 
 ### Fixes
 
+* Fix an infinite recursion issue. [Stavros Korokithakis]
+
 * Add support for strip4 (YLDD03YL) [zvldz]
 
 
