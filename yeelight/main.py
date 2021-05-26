@@ -178,6 +178,11 @@ _MODEL_SPECS = {
         "night_light": False,
         "background_light": False,
     },
+    "monob": {
+        "color_temp": {"min": 2700, "max": 2700},
+        "night_light": False,
+        "background_light": False,
+    },
     "strip1": {
         "color_temp": {"min": 1700, "max": 6500},
         "night_light": False,
