@@ -37,7 +37,17 @@ _MODEL_SPECS = {
         "night_light": True,
         "background_light": False,
     },
+    "bslamp3": {
+        "color_temp": {"min": 1700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
     "ceil26": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
+    "ceila": {
         "color_temp": {"min": 2700, "max": 6500},
         "night_light": True,
         "background_light": False,
@@ -57,6 +67,11 @@ _MODEL_SPECS = {
         "night_light": True,
         "background_light": False,
     },
+    "ceiling18": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
     "ceiling19": {
         "color_temp": {"min": 2700, "max": 6500},
         "night_light": True,
@@ -71,6 +86,11 @@ _MODEL_SPECS = {
         "color_temp": {"min": 2700, "max": 6500},
         "night_light": True,
         "background_light": True,
+    },
+    "ceiling24": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": True,
+        "background_light": False,
     },
     "ceiling2": {
         "color_temp": {"min": 2700, "max": 6500},
@@ -112,6 +132,11 @@ _MODEL_SPECS = {
         "night_light": False,
         "background_light": False,
     },
+    "colorc": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
     "color": {
         "color_temp": {"min": 1700, "max": 6500},
         "night_light": False,
@@ -122,12 +147,33 @@ _MODEL_SPECS = {
         "night_light": False,
         "background_light": False,
     },
+    "ct2": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
+    "lamp1": {
+        "color_temp": {"min": 2700, "max": 5000},
+        "night_light": False,
+        "background_light": False,
+    },
     "lamp4": {
         "color_temp": {"min": 2600, "max": 5000},
         "night_light": False,
         "background_light": False,
     },
+    "lamp15": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": False,
+        "background_light": True,
+        "bulb_type": BulbType.WhiteTempMood,
+    },
     "mono1": {
+        "color_temp": {"min": 2700, "max": 2700},
+        "night_light": False,
+        "background_light": False,
+    },
+    "mono5": {
         "color_temp": {"min": 2700, "max": 2700},
         "night_light": False,
         "background_light": False,
@@ -139,6 +185,16 @@ _MODEL_SPECS = {
     },
     "strip1": {
         "color_temp": {"min": 1700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
+    "strip2": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
+    "strip4": {
+        "color_temp": {"min": 2700, "max": 6500},
         "night_light": False,
         "background_light": False,
     },
@@ -456,6 +512,16 @@ class Bulb(object):
             name not in self.last_properties for name in ["ct", "rgb"]
         ):
             return BulbType.Unknown
+
+        # Override autodetection if bulb_type is provided in _MODEL_SPECS.
+        # We don't use get_model_specs() here to avoid a possible recursion.
+        if (
+            self.model is not None
+            and self.model in _MODEL_SPECS
+            and "bulb_type" in _MODEL_SPECS[self.model]
+        ):
+            return _MODEL_SPECS[self.model]["bulb_type"]
+
         if self.last_properties["rgb"] is None and self.last_properties["ct"]:
             if self.last_properties["bg_power"] is not None:
                 return BulbType.WhiteTempMood
@@ -527,6 +593,7 @@ class Bulb(object):
                         # Update notification received
                         _LOGGER.debug("New props received: %s", line)
                         self._last_properties.update(line["params"])
+                        self._process_properties()
                         callback(line["params"])
         except socket.error as ex:
             if not self._is_listening:
@@ -542,6 +609,19 @@ class Bulb(object):
         self._notification_socket.shutdown(socket.SHUT_RDWR)
         self._notification_socket.close()
         self._notification_socket = None
+
+    def _process_properties(self):
+        """Update derived properties after an update of the self._last_properties."""
+        if self._last_properties.get("power") == "off":
+            cb = "0"
+        if self._last_properties.get("bg_power") == "off":
+            cb = "0"
+        elif self._last_properties.get("active_mode") == "1":
+            # Nightlight mode.
+            cb = self._last_properties.get("nl_br")
+        else:
+            cb = self._last_properties.get("bright")
+        self._last_properties["current_brightness"] = cb
 
     def get_properties(
         self,
@@ -602,16 +682,7 @@ class Bulb(object):
                 k: capabilities[k] for k in requested_properties if k in capabilities
             }
 
-        if self._last_properties.get("power") == "off":
-            cb = "0"
-        if self._last_properties.get("bg_power") == "off":
-            cb = "0"
-        elif self._last_properties.get("active_mode") == "1":
-            # Nightlight mode.
-            cb = self._last_properties.get("nl_br")
-        else:
-            cb = self._last_properties.get("bright")
-        self._last_properties["current_brightness"] = cb
+        self._process_properties()
 
         return self._last_properties
 
