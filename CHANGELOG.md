@@ -1,7 +1,29 @@
 # Changelog
 
 
-## Unreleased
+## v0.6.2 (2021-05-02)
+
+### Features
+
+* Add support for bslamp3, ceiling18, ceiling24, ct2, lamp1, strip2. [root]
+
+* Add support for ceila (YLXD76YL) [zvldz]
+
+### Fixes
+
+* Fix an infinite recursion issue. [Stavros Korokithakis]
+
+* Add support for strip4 (YLDD03YL) [zvldz]
+
+
+## v0.6.1 (2021-04-20)
+
+### Fixes
+
+* Add support for lamp15  (YLTD003) [Caleb Mah]
+
+
+## v0.6.0 (2021-04-12)
 
 ### Features
 
