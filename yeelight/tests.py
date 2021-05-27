@@ -343,7 +343,10 @@ class Tests(unittest.TestCase):
             thread = threading.Thread(target=_listen)
             thread.start()
             assert notification_event.wait(0.5) is True
-            assert self.bulb.last_properties == {"power": "on", "current_brightness": None}
+            assert self.bulb.last_properties == {
+                "power": "on",
+                "current_brightness": None,
+            }
             self.bulb.stop_listening()
             assert listening_stopped_event.wait(0.5) is True
 
