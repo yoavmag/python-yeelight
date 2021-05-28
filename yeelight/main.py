@@ -592,7 +592,7 @@ class Bulb(object):
                     if line.get("method") == "props":
                         # Update notification received
                         _LOGGER.debug("New props received: %s", line)
-                        self._set_last_properties(line["params"], True)
+                        self._set_last_properties(line["params"], update=True)
                         callback(line["params"])
         except socket.error as ex:
             if not self._is_listening:
@@ -675,7 +675,6 @@ class Bulb(object):
         if self._music_mode:
             return self._last_properties
 
-        new_values = {}
         response = self.send_command("get_prop", requested_properties)
         if response is not None and "result" in response:
             properties = response["result"]
@@ -687,7 +686,7 @@ class Bulb(object):
                 k: capabilities[k] for k in requested_properties if k in capabilities
             }
 
-        self._set_last_properties(new_values, False)
+        self._set_last_properties(new_values, update=False)
 
         return self._last_properties
 
