@@ -592,7 +592,7 @@ class Bulb(object):
                     if line.get("method") == "props":
                         # Update notification received
                         _LOGGER.debug("New props received: %s", line)
-                        self._update_last_properties(line["params"])
+                        self._set_last_properties(line["params"], True)
                         callback(line["params"])
         except socket.error as ex:
             if not self._is_listening:
@@ -609,9 +609,12 @@ class Bulb(object):
         self._notification_socket.close()
         self._notification_socket = None
 
-    def _update_last_properties(self, new_values):
+    def _set_last_properties(self, properties, update = True):
         """Update derived properties after an update of the self._last_properties."""
-        self._last_properties.update(new_values)
+        if update:
+            self._last_properties.update(properties)
+        else:
+            self._last_properties = properties
 
         if self._last_properties.get("power") == "off":
             cb = "0"
@@ -684,7 +687,7 @@ class Bulb(object):
                 k: capabilities[k] for k in requested_properties if k in capabilities
             }
 
-        self._update_last_properties(new_values)
+        self._set_last_properties(new_values, False)
 
         return self._last_properties
 
