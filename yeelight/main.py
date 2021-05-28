@@ -597,7 +597,7 @@ class Bulb(object):
                     if line.get("method") == "props":
                         # Update notification received
                         _LOGGER.debug("New props received: %s", line)
-                        self._last_properties.update(line["params"])
+                        self._set_last_properties(line["params"], update=True)
                         callback(line["params"])
         except socket.error as ex:
             if not self._is_listening:
@@ -613,6 +613,24 @@ class Bulb(object):
         self._notification_socket.shutdown(socket.SHUT_RDWR)
         self._notification_socket.close()
         self._notification_socket = None
+
+    def _set_last_properties(self, properties, update=True):
+        """Update derived properties after an update of the self._last_properties."""
+        if update:
+            self._last_properties.update(properties)
+        else:
+            self._last_properties = properties
+
+        if self._last_properties.get("power") == "off":
+            cb = "0"
+        if self._last_properties.get("bg_power") == "off":
+            cb = "0"
+        elif self._last_properties.get("active_mode") == "1":
+            # Nightlight mode.
+            cb = self._last_properties.get("nl_br")
+        else:
+            cb = self._last_properties.get("bright")
+        self._last_properties["current_brightness"] = cb
 
     def get_properties(
         self,
@@ -666,23 +684,14 @@ class Bulb(object):
         if response is not None and "result" in response:
             properties = response["result"]
             properties = [x if x else None for x in properties]
-            self._last_properties = dict(zip(requested_properties, properties))
+            new_values = dict(zip(requested_properties, properties))
         elif ssdp_fallback:
             capabilities = self.get_capabilities()
-            self._last_properties = {
+            new_values = {
                 k: capabilities[k] for k in requested_properties if k in capabilities
             }
 
-        if self._last_properties.get("power") == "off":
-            cb = "0"
-        if self._last_properties.get("bg_power") == "off":
-            cb = "0"
-        elif self._last_properties.get("active_mode") == "1":
-            # Nightlight mode.
-            cb = self._last_properties.get("nl_br")
-        else:
-            cb = self._last_properties.get("bright")
-        self._last_properties["current_brightness"] = cb
+        self._set_last_properties(new_values, update=False)
 
         return self._last_properties
 
