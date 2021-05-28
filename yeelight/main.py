@@ -609,7 +609,7 @@ class Bulb(object):
         self._notification_socket.close()
         self._notification_socket = None
 
-    def _set_last_properties(self, properties, update = True):
+    def _set_last_properties(self, properties, update=True):
         """Update derived properties after an update of the self._last_properties."""
         if update:
             self._last_properties.update(properties)
