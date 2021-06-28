@@ -26,6 +26,30 @@ except ImportError:
 
 _LOGGER = logging.getLogger(__name__)
 
+
+DEFAULT_PROPS = [
+    "power",
+    "bright",
+    "ct",
+    "rgb",
+    "hue",
+    "sat",
+    "color_mode",
+    "flowing",
+    "delayoff",
+    "music_on",
+    "name",
+    "bg_power",
+    "bg_flowing",
+    "bg_ct",
+    "bg_bright",
+    "bg_hue",
+    "bg_sat",
+    "bg_rgb",
+    "nl_br",
+    "active_mode",
+]
+
 _MODEL_SPECS = {
     "bslamp1": {
         "color_temp": {"min": 1700, "max": 6500},
@@ -216,16 +240,17 @@ def get_known_models():
     return list(_MODEL_SPECS.keys())
 
 
-@decorator
-def _command(f, *args, **kw):
-    """A decorator that wraps a function and enables effects."""
-    self = args[0]
-    effect = kw.get("effect", self.effect)
-    duration = kw.get("duration", self.duration)
-    power_mode = kw.get("power_mode", self.power_mode)
+def _command_to_send_command(
+    self, method, params, kwargs, effect, duration, power_mode
+):
+    """
+    Convert args and kwargs to method and params.
 
-    method, params, kwargs = f(*args, **kw)
-
+    This provides the underlying fuctionality for the _command
+    decorator and aio._async_command decorator. This function
+    contains the code that can be shared between the sync
+    and async versions.
+    """
     light_type = kwargs.get("light_type", LightType.Main)
 
     # Prepend the control for different bulbs
@@ -298,7 +323,23 @@ def _command(f, *args, **kw):
         ):
             params += [power_mode.value]
 
-    result = self.send_command(method, params).get("result", [])
+    return method, params
+
+
+@decorator
+def _command(f, *args, **kw):
+    """A decorator that wraps a function and enables effects."""
+    self = args[0]
+    cmd = self.send_command(
+        *_command_to_send_command(
+            self,
+            *f(*args, **kw),
+            kw.get("effect", self.effect),
+            kw.get("duration", self.duration),
+            kw.get("power_mode", self.power_mode)
+        )
+    )
+    result = cmd.get("result", [])
     if result:
         return result[0]
 
@@ -633,30 +674,7 @@ class Bulb(object):
         self._last_properties["current_brightness"] = cb
 
     def get_properties(
-        self,
-        requested_properties=[
-            "power",
-            "bright",
-            "ct",
-            "rgb",
-            "hue",
-            "sat",
-            "color_mode",
-            "flowing",
-            "delayoff",
-            "music_on",
-            "name",
-            "bg_power",
-            "bg_flowing",
-            "bg_ct",
-            "bg_bright",
-            "bg_hue",
-            "bg_sat",
-            "bg_rgb",
-            "nl_br",
-            "active_mode",
-        ],
-        ssdp_fallback=False,
+        self, requested_properties=DEFAULT_PROPS, ssdp_fallback=False,
     ):
         """
         Retrieve and return the properties of the bulb.
@@ -782,7 +800,9 @@ class Bulb(object):
         :param yeelight.LightType light_type: Light type to control.
         """
         self.ensure_on()
+        return self._set_color_temp(degrees, light_type=light_type, **kwargs)
 
+    def _set_color_temp(self, degrees, light_type=LightType.Main, **kwargs):
         return (
             "set_ct_abx",
             [self._clamp_color_temp(degrees)],
@@ -801,7 +821,9 @@ class Bulb(object):
                           Light type to control.
         """
         self.ensure_on()
+        return self._set_rgb(red, green, blue, light_type=light_type, **kwargs)
 
+    def _set_rgb(self, red, green, blue, light_type=LightType.Main, **kwargs):
         return (
             "set_rgb",
             [rgb_to_yeelight(red, green, blue)],
@@ -824,6 +846,9 @@ class Bulb(object):
                            for color. The only action for "color" can be
                            "circle". Why? Who knows.
         """
+        return self._set_adjust(action, prop, **kwargs)
+
+    def _set_adjust(self, action, prop, **kwargs):
         return "set_adjust", [action, prop], kwargs
 
     @_command
@@ -839,7 +864,9 @@ class Bulb(object):
         :param yeelight.LightType light_type: Light type to control.
         """
         self.ensure_on()
+        return self._set_hsv(hue, saturation, value, light_type, **kwargs)
 
+    def _set_hsv(self, hue, saturation, value, light_type, **kwargs):
         # We fake this using flow so we can add the `value` parameter.
         hue = _clamp(hue, 0, 359)
         saturation = _clamp(saturation, 0, 100)
@@ -879,7 +906,9 @@ class Bulb(object):
         :param yeelight.LightType light_type: Light type to control.
         """
         self.ensure_on()
+        return self._set_brightness(brightness, light_type=light_type, **kwargs)
 
+    def _set_brightness(self, brightness, light_type=LightType.Main, **kwargs):
         brightness = _clamp(brightness, 1, 100)
         return "set_bright", [brightness], dict(kwargs, light_type=light_type)
 
@@ -890,6 +919,9 @@ class Bulb(object):
 
         :param yeelight.LightType light_type: Light type to control.
         """
+        return self._turn_on(light_type=light_type, **kwargs)
+
+    def _turn_on(self, light_type=LightType.Main, **kwargs):
         return "set_power", ["on"], dict(kwargs, light_type=light_type)
 
     @_command
@@ -899,6 +931,9 @@ class Bulb(object):
 
         :param yeelight.LightType light_type: Light type to control.
         """
+        return self._turn_off(light_type=light_type, **kwargs)
+
+    def _turn_off(self, light_type=LightType.Main, **kwargs):
         return "set_power", ["off"], dict(kwargs, light_type=light_type)
 
     @_command
@@ -908,11 +943,17 @@ class Bulb(object):
 
         :param yeelight.LightType light_type: Light type to control.
         """
+        return self._toggle(light_type=light_type, **kwargs)
+
+    def _toggle(self, light_type=LightType.Main, **kwargs):
         return "toggle", [], dict(kwargs, light_type=light_type)
 
     @_command
     def dev_toggle(self, **kwargs):
         """Toggle the main light and the ambient on or off."""
+        return self._dev_toggle(**kwargs)
+
+    def _dev_toggle(self, **kwargs):
         return "dev_toggle", [], kwargs
 
     @_command
@@ -925,6 +966,9 @@ class Bulb(object):
 
         :param yeelight.LightType light_type: Light type to control.
         """
+        return self._set_default(light_type=light_type, **kwargs)
+
+    def _set_default(self, light_type=LightType.Main, **kwargs):
         return "set_default", [], dict(kwargs, light_type=light_type)
 
     @_command
@@ -934,6 +978,9 @@ class Bulb(object):
 
         :param str name: The string you want to set as the bulb's name.
         """
+        return self._set_name(name, **kwargs)
+
+    def _set_name(self, name, **kwargs):
         return "set_name", [name], kwargs
 
     @_command
@@ -943,10 +990,12 @@ class Bulb(object):
 
         :param yeelight.Flow flow: The Flow instance to start.
         """
+        self.ensure_on()
+        return self._start_start_flow(flow, light_type=light_type, **kwargs)
+
+    def _start_start_flow(self, flow, light_type=LightType.Main, **kwargs):
         if not isinstance(flow, Flow):
             raise ValueError("Argument is not a Flow instance.")
-
-        self.ensure_on()
 
         return (
             "start_cf",
@@ -961,6 +1010,9 @@ class Bulb(object):
 
         :param yeelight.LightType light_type: Light type to control.
         """
+        return self._stop_flow(light_type=light_type, **kwargs)
+
+    def _stop_flow(self, light_type=LightType.Main, **kwargs):
         return "stop_cf", [], dict(kwargs, light_type=light_type)
 
     @_command
@@ -1008,6 +1060,9 @@ class Bulb(object):
 
         :param yeelight.LightType light_type: Light type to control.
         """
+        return self._set_scene(scene_class, *args, light_type=light_type, **kwargs)
+
+    def _set_scene(self, scene_class, *args, light_type=LightType.Main, **kwargs):
         scene_args = [scene_class.name.lower()]
         if scene_class == SceneClass.COLOR:
             scene_args += [rgb_to_yeelight(*args[:3]), args[3]]
@@ -1096,6 +1151,9 @@ class Bulb(object):
         :param yeelight.CronType event_type: The type of event. Currently,
                                                    only ``CronType.off``.
         """
+        return self._cron_add(event_type, value, **kwargs)
+
+    def _cron_add(self, event_type, value, **kwargs):
         return "cron_add", [event_type.value, value], kwargs
 
     @_command
@@ -1106,6 +1164,9 @@ class Bulb(object):
         :param yeelight.CronType event_type: The type of event. Currently,
                                                    only ``CronType.off``.
         """
+        return self._cron_get(event_type, **kwargs)
+
+    def _cron_get(self, event_type, **kwargs):
         return "cron_get", [event_type.value], kwargs
 
     @_command
@@ -1116,6 +1177,9 @@ class Bulb(object):
         :param yeelight.CronType event_type: The type of event. Currently,
                                                    only ``CronType.off``.
         """
+        return self._cron_del(event_type, **kwargs)
+
+    def _cron_del(self, event_type, **kwargs):
         return "cron_del", [event_type.value], kwargs
 
     def __repr__(self):
