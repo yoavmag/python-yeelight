@@ -52,6 +52,7 @@ That's it!
 Refer to the rest of `the documentation
 <https://yeelight.readthedocs.io/en/stable/>`_ for more details.
 
+The library also contains a (currently undocumented) asyncio interface.
 
 Contributing
 ------------

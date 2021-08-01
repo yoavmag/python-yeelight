@@ -1,6 +1,19 @@
 # Changelog
 
 
+## Unreleased
+
+### Features
+
+* Add asyncio support. [J. Nick Koston]
+
+* Add support for Yeelight GU10 dimmable (YLDP004) [Stavros Korokithakis]
+
+### Fixes
+
+* Update _last_properties more consistently. [starkillerOG]
+
+
 ## v0.6.2 (2021-05-02)
 
 ### Features
