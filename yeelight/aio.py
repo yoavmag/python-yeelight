@@ -18,6 +18,8 @@ _LOGGER = logging.getLogger(__name__)
 TIMEOUT = 5
 PING_INTERVAL = 60
 
+KEY_CONNECTED = "connected"
+
 
 def _async_command(f):
     """
@@ -102,6 +104,7 @@ class AsyncBulb(Bulb):
                 await self._async_connection_loop()
             finally:
                 self._async_close_reader_writer()
+                self._async_callback({KEY_CONNECTED: False})
                 await self._async_reconnect_loop()
 
     async def _async_reconnect_loop(self):
@@ -171,7 +174,9 @@ class AsyncBulb(Bulb):
             # Update notification received
             _LOGGER.debug("%s: New props received: %s", self, decoded_line)
             self._set_last_properties(decoded_line["params"], update=True)
-            self._async_callback(decoded_line["params"])
+            data = decoded_line["params"]
+            data.update({KEY_CONNECTED: True})
+            self._async_callback(data)
 
     def _async_connected(self, writer, reader):
         """Called when we are successfully connected to the bulb."""
@@ -208,6 +213,7 @@ class AsyncBulb(Bulb):
         self._is_listening = True
         self._async_connected(writer, reader)
         self._async_listen_task = asyncio.ensure_future(self._async_run_listen())
+        self._async_callback({KEY_CONNECTED: True})
 
     def _async_stop_listen_task(self):
         if self._async_listen_task:
