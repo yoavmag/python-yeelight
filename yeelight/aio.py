@@ -232,7 +232,6 @@ class AsyncBulb(Bulb):
         self._is_listening = False
         self._async_stop_listen_task()
         self._async_close_reader_writer()
-        self._async_callback = None
 
     async def async_get_properties(
         self, requested_properties=DEFAULT_PROPS,
