@@ -1,6 +1,13 @@
 # Changelog
 
 
+## Unreleased
+
+### Fixes
+
+* Improve async handling on connection errors. [starkillerOG]
+
+
 ## v0.7.0 (2021-08-04)
 
 ### Features
