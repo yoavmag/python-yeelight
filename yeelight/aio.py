@@ -106,6 +106,7 @@ class AsyncBulb(Bulb):
                 self._async_close_reader_writer()
                 if self._async_callback:
                     self._async_callback({KEY_CONNECTED: False})
+                await asyncio.sleep(TIMEOUT)
                 await self._async_reconnect_loop()
 
     async def _async_reconnect_loop(self):
