@@ -178,7 +178,7 @@ class AsyncBulb(Bulb):
                     continue
 
             if "error" in decoded_line:
-                if decoded_line["error"].get("message") == "client quota exceeded"
+                if decoded_line["error"].get("message") == "client quota exceeded":
                     _LOGGER.debug("%s: client quota exceeded, dropping connection and reconnecting", self)
                     return
 
