@@ -168,6 +168,11 @@ class AsyncBulb(Bulb):
                 if future:
                     future.set_result(decoded_line)
 
+            if "error" in decoded_line:
+                if decoded_line["error"].get("message") == "client quota exceeded"
+                    _LOGGER.debug("%s: client quota exceeded, dropping connection and reconnecting", self)
+                    return
+
             if decoded_line.get("method") != "props":
                 _LOGGER.debug("%s: props not in line: %s", self, line)
                 continue
