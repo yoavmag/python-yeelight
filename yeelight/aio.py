@@ -125,7 +125,7 @@ class AsyncBulb(Bulb):
 
     async def _async_connection_loop(self):
         timeouts = 0
-        ping_id = -1;
+        ping_id = -1
         while self._is_listening:
             try:
                 _LOGGER.debug("%s: Waiting for line", self)
@@ -179,7 +179,10 @@ class AsyncBulb(Bulb):
 
             if "error" in decoded_line:
                 if decoded_line["error"].get("message") == "client quota exceeded":
-                    _LOGGER.debug("%s: client quota exceeded, dropping connection and reconnecting", self)
+                    _LOGGER.debug(
+                        "%s: client quota exceeded, dropping connection and reconnecting",
+                        self,
+                    )
                     return
 
             if decoded_line.get("method") != "props":
