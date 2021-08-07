@@ -94,7 +94,7 @@ class AsyncBulb(Bulb):
         self._async_writer.write(b" ")
         await self._async_writer.drain()
         _LOGGER.debug("%s: Finished _async_send_command", self)
-        return future if create_future else None
+        return future if create_future else request_id
 
     async def _async_run_listen(self):
         """Backend for async_listen."""
@@ -125,6 +125,7 @@ class AsyncBulb(Bulb):
 
     async def _async_connection_loop(self):
         timeouts = 0
+        ping_id = -1;
         while self._is_listening:
             try:
                 _LOGGER.debug("%s: Waiting for line", self)
@@ -141,7 +142,7 @@ class AsyncBulb(Bulb):
                     self,
                     PING_INTERVAL + TIMEOUT,
                 )
-                await self._async_send_command(
+                ping_id = await self._async_send_command(
                     "get_prop", ["power"], create_future=False
                 )
                 continue
@@ -168,6 +169,13 @@ class AsyncBulb(Bulb):
                 future = self._async_pending_commands.pop(decoded_line["id"], None)
                 if future:
                     future.set_result(decoded_line)
+                elif decoded_line["id"] == ping_id:
+                    _LOGGER.debug("%s: Ping result received: %s", self, decoded_line)
+                    data = {"power": decoded_line["result"][0]}
+                    self._set_last_properties(data, update=True)
+                    data.update({KEY_CONNECTED: True})
+                    self._async_callback(data)
+                    continue
 
             if "error" in decoded_line:
                 if decoded_line["error"].get("message") == "client quota exceeded"
