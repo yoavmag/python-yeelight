@@ -121,6 +121,8 @@ class AsyncBulb(Bulb):
             else:
                 _LOGGER.debug("%s: Reconnected successfully", self)
                 self._async_connected(writer, reader)
+                if self._async_callback:
+                    self._async_callback({KEY_CONNECTED: True})
                 return
 
     async def _async_connection_loop(self):
@@ -252,9 +254,7 @@ class AsyncBulb(Bulb):
         self._async_close_reader_writer()
         self._async_callback = None
 
-    async def async_get_properties(
-        self, requested_properties=DEFAULT_PROPS,
-    ):
+    async def async_get_properties(self, requested_properties=DEFAULT_PROPS):
         """
         Retrieve and return the properties of the bulb.
 
