@@ -313,6 +313,12 @@ class Tests(unittest.TestCase):
             self.socket.sent["params"], ["cf", 0, 0, "500, 1, 1315890, 50"]
         )
 
+    def test_set_capabilities(self):
+        current_capabilities = self.bulb.capabilities.copy()
+        current_capabilities["test_cap"] = True
+        self.bulb.set_capabilities(current_capabilities)
+        assert self.bulb.capabilities["test_cap"] is True
+
     def test_notification(self):
         notification_event = threading.Event()
         listening_stopped_event = threading.Event()

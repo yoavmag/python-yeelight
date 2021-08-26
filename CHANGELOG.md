@@ -3,6 +3,10 @@
 
 ## Unreleased
 
+### Features
+
+* Add support for setting capabilities from external discovery. [J. Nick Koston]
+
 ### Fixes
 
 * Increase asyncio timeout to 15 seconds. [J. Nick Koston]
