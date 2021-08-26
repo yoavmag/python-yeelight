@@ -5,11 +5,20 @@
 
 ### Features
 
+* Add support for setting capabilities from external discovery. [J. Nick Koston]
+
 * Add support for YLDD05YL aka strip6. [J. Nick Koston]
 
 ### Fixes
 
 * Increase asyncio timeout to 15 seconds. [J. Nick Koston]
+
+
+## v0.7.3 (2021-08-21)
+
+### Fixes
+
+* Callback connected state right after reconnect in aio. [J. Nick Koston]
 
 
 ## v0.7.2 (2021-08-07)
