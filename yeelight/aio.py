@@ -15,7 +15,7 @@ from .main import DEFAULT_PROPS
 
 _LOGGER = logging.getLogger(__name__)
 
-TIMEOUT = 5
+TIMEOUT = 15
 PING_INTERVAL = 60
 
 KEY_CONNECTED = "connected"
