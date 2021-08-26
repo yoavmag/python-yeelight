@@ -227,6 +227,11 @@ _MODEL_SPECS = {
         "night_light": False,
         "background_light": False,
     },
+    "strip6": {
+        "color_temp": {"min": 2700, "max": 6500},
+        "night_light": False,
+        "background_light": False,
+    },
 }
 
 
