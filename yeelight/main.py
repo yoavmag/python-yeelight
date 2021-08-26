@@ -508,6 +508,10 @@ class Bulb(object):
         self._capabilities = capabilities
         return capabilities
 
+    def set_capabilities(self, capabilities):
+        """Set capabilities from external discovery."""
+        self._capabilities = capabilities
+
     def ensure_on(self):
         """Turn the bulb on if it is off."""
         if self._music_mode is True or self.auto_on is False:
