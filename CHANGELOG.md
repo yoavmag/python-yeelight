@@ -11,6 +11,11 @@
 
 * Increase asyncio timeout to 15 seconds. [J. Nick Koston]
 
+
+## v0.7.2 (2021-08-07)
+
+### Fixes
+
 * Improve async handling on connection errors. [starkillerOG]
 
 
