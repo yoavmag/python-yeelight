@@ -3,6 +3,10 @@
 
 ## Unreleased
 
+### Features
+
+* Add support for YLDD05YL aka strip6. [J. Nick Koston]
+
 ### Fixes
 
 * Increase asyncio timeout to 15 seconds. [J. Nick Koston]
