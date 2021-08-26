@@ -5,6 +5,8 @@
 
 ### Features
 
+* Add support for setting capabilities from external discovery. [J. Nick Koston]
+
 * Add support for YLDD05YL aka strip6. [J. Nick Koston]
 
 ### Fixes
