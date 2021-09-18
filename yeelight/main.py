@@ -197,6 +197,11 @@ _MODEL_SPECS = {
         "night_light": False,
         "background_light": False,
     },
+    "mono4": {
+        "color_temp": {"min": 2700, "max": 2700},
+        "night_light": False,
+        "background_light": False,
+    },
     "mono5": {
         "color_temp": {"min": 2700, "max": 2700},
         "night_light": False,
