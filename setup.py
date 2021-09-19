@@ -26,7 +26,7 @@ setup(
     author_email="hi@stavros.io",
     url="https://gitlab.com/stavros/python-yeelight/",
     description="A Python library for controlling YeeLight RGB bulbs.",
-    long_description=open("README.rst").read(),
+    long_description=open("README.md").read(),
     license="BSD",
     classifiers=classifiers,
     packages=["yeelight"],
