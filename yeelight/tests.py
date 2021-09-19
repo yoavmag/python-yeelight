@@ -10,7 +10,7 @@ if sys.version_info >= (3, 3):
 else:
     import mock
 
-from yeelight import Bulb
+from yeelight import Bulb, BulbType
 from yeelight import enums
 from yeelight import Flow
 from yeelight import flows
@@ -40,6 +40,77 @@ class Tests(unittest.TestCase):
         self.socket = SocketMock()
         self.bulb = Bulb(ip="", auto_on=True)
         self.bulb._Bulb__socket = self.socket
+
+    def test_detect_capabilities(self):
+        self.bulb._last_properties = {"ct": "4000", "rgb": "123"}
+        self.bulb._capabilities = {
+            "id": "0x000000001565950c",
+            "model": "unknown",
+            "fw_ver": "9",
+            "support": "get_prop set_default set_power toggle set_bright set_scene cron_add cron_get cron_del start_cf stop_cf set_name set_adjust adjust_bright set_ct_abx adjust_ct adjust_color set_rgb set_hsv set_music",
+            "power": "on",
+            "bright": "100",
+            "color_mode": "1",
+            "ct": "4000",
+            "rgb": "1048575",
+            "hue": "180",
+            "sat": "94",
+            "name": "",
+            "_location_original": "yeelight://192.168.107.218:55443",
+            "location": "yeelight://192.168.107.218:55443",
+        }
+        assert self.bulb.bulb_type == BulbType.Color
+        self.bulb._capabilities = {
+            "id": "0x000000001565950c",
+            "model": "unknown",
+            "fw_ver": "9",
+            "support": "get_prop set_default set_power toggle set_bright set_scene cron_add cron_get cron_del start_cf stop_cf set_name set_adjust adjust_bright set_ct_abx adjust_ct set_music",
+            "power": "on",
+            "bright": "100",
+            "color_mode": "1",
+            "ct": "4000",
+            "rgb": "1048575",
+            "hue": "180",
+            "sat": "94",
+            "name": "",
+            "_location_original": "yeelight://192.168.107.218:55443",
+            "location": "yeelight://192.168.107.218:55443",
+        }
+        assert self.bulb.bulb_type == BulbType.WhiteTemp
+        self.bulb._capabilities = {
+            "id": "0x000000001565950c",
+            "model": "unknown",
+            "fw_ver": "9",
+            "support": "get_prop set_default set_power toggle set_bright set_scene cron_add cron_get cron_del start_cf stop_cf set_name set_adjust adjust_bright set_music",
+            "power": "on",
+            "bright": "100",
+            "color_mode": "1",
+            "ct": "4000",
+            "rgb": "1048575",
+            "hue": "180",
+            "sat": "94",
+            "name": "",
+            "_location_original": "yeelight://192.168.107.218:55443",
+            "location": "yeelight://192.168.107.218:55443",
+        }
+        assert self.bulb.bulb_type == BulbType.White
+        self.bulb._capabilities = {
+            "id": "0x00000000158d5a91",
+            "model": "ceilingunknown",
+            "fw_ver": "49",
+            "support": "get_prop set_default set_power toggle set_bright set_scene cron_add cron_get cron_del start_cf stop_cf set_ct_abx set_name set_adjust adjust_bright adjust_ct bg_set_rgb bg_set_hsv bg_set_ct_abx bg_start_cf bg_stop_cf set_scene_bundle bg_set_default bg_set_power bg_set_bright bg_set_adjust bg_adjust_bright bg_adjust_color bg_adjust_ct bg_toggle dev_toggle",
+            "power": "on",
+            "bright": "58",
+            "color_mode": "2",
+            "ct": "3000",
+            "rgb": "0",
+            "hue": "0",
+            "sat": "0",
+            "name": "",
+            "_location_original": "yeelight://192.168.107.85:55443",
+            "location": "yeelight://192.168.107.85:55443",
+        }
+        assert self.bulb.bulb_type == BulbType.WhiteTempMood
 
     def test_rgb1(self):
         self.bulb.set_rgb(255, 255, 0)

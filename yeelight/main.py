@@ -577,6 +577,16 @@ class Bulb(object):
         ):
             return _MODEL_SPECS[self.model]["bulb_type"]
 
+        if "support" in self._capabilities:
+            support = set(self._capabilities["support"].split(" "))
+            if "set_rgb" in support:
+                return BulbType.Color
+            if "bg_set_power" in support:
+                return BulbType.WhiteTempMood
+            if "set_ct_abx" in support:
+                return BulbType.WhiteTemp
+            return BulbType.White
+
         if self.last_properties["rgb"] is None and self.last_properties["ct"]:
             if self.last_properties["bg_power"] is not None:
                 return BulbType.WhiteTempMood
