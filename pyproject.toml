@@ -1,3 +1,7 @@
+[tool.poetry]
+name = "yeelight"
+version = "0.7.5"
+
 [build-system]
 requires = ["flit_core >=2,<3"]
 build-backend = "flit_core.buildapi"
