@@ -1,6 +1,17 @@
 # Changelog
 
 
+## Unreleased
+
+### Features
+
+* Improve model detection. [J. Nick Koston]
+
+### Fixes
+
+* Fix aio disconnect handling. [J. Nick Koston]
+
+
 ## v0.7.4 (2021-08-26)
 
 ### Features

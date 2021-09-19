@@ -61,6 +61,7 @@ class AsyncBulb(Bulb):
         self._async_writer = None
         self._async_reader = None
         self._async_cmd_id = 0
+        self._socket_backoff = False
 
     async def async_send_command(self, method, params):
         """Send a command to the bulb and wait for the result."""
@@ -106,8 +107,9 @@ class AsyncBulb(Bulb):
                 self._async_close_reader_writer()
                 if self._async_callback:
                     self._async_callback({KEY_CONNECTED: False})
-                await asyncio.sleep(TIMEOUT)
-                await self._async_reconnect_loop()
+                if self._is_listening:
+                    await self._async_backoff()
+                    await self._async_reconnect_loop()
 
     async def _async_reconnect_loop(self):
         _LOGGER.debug("%s: Starting reconnect", self)
@@ -125,9 +127,16 @@ class AsyncBulb(Bulb):
                     self._async_callback({KEY_CONNECTED: True})
                 return
 
-    async def _async_connection_loop(self):
+    async def _async_backoff(self):
+        # back off only if we had a previous failure without a success
+        if self._socket_backoff:
+            await asyncio.sleep(TIMEOUT)
+        self._socket_backoff = True
+
+    async def _async_connection_loop(self) -> None:
         timeouts = 0
         ping_id = -1
+        assert self._async_reader is not None
         while self._is_listening:
             try:
                 _LOGGER.debug("%s: Waiting for line", self)
@@ -150,14 +159,13 @@ class AsyncBulb(Bulb):
                 continue
             except socket.error as ex:
                 _LOGGER.debug("%s: Socket error: %s", self, ex)
-                # back off
-                await asyncio.sleep(TIMEOUT)
                 return
-            else:
+
+            if line:
+                self._socket_backoff = False
                 _LOGGER.debug("%s: Success got line: %s", self, line)
                 timeouts = 0
-
-            if not line:
+            else:
                 _LOGGER.debug("%s: Bulb closed the connection", self)
                 return
 
@@ -179,13 +187,17 @@ class AsyncBulb(Bulb):
                     self._async_callback(data)
                     continue
 
-            if "error" in decoded_line:
-                if decoded_line["error"].get("message") == "client quota exceeded":
-                    _LOGGER.debug(
-                        "%s: client quota exceeded, dropping connection and reconnecting",
-                        self,
-                    )
-                    return
+            if (
+                "error" in decoded_line
+                and decoded_line["error"].get("message") == "client quota exceeded"
+            ):
+                _LOGGER.debug(
+                    "%s: client quota exceeded, dropping connection and reconnecting",
+                    self,
+                )
+                # Force backoff since reconnect will not clear the quota right away
+                self._socket_backoff = True
+                return
 
             if decoded_line.get("method") != "props":
                 _LOGGER.debug("%s: props not in line: %s", self, line)
