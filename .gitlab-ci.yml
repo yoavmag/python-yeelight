@@ -42,6 +42,7 @@ pypi:
     when: on_success
   script:
       - pip install -U twine gitchangelog pystache
-      - gitchangelog
+      - echo "" >> README.md
+      - gitchangelog >> README.md
       - python setup.py sdist bdist_wheel
       - twine upload dist/*
