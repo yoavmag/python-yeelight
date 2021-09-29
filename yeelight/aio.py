@@ -91,9 +91,6 @@ class AsyncBulb(Bulb):
         command = {"id": request_id, "method": method, "params": params}
         _LOGGER.debug("%s > %s", self, command)
         self._async_writer.write((json.dumps(command) + "\r\n").encode("utf8"))
-        await self._async_writer.drain()
-        self._async_writer.write(b" ")
-        await self._async_writer.drain()
         _LOGGER.debug("%s: Finished _async_send_command", self)
         return future if create_future else request_id
 
