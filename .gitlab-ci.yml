@@ -45,4 +45,4 @@ pypi:
       - echo "" >> README.md
       - gitchangelog >> README.md
       - python setup.py sdist bdist_wheel
-      - twine upload dist/*
+      - twine upload --verbose dist/*
