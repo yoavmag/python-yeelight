@@ -1,4 +1,9 @@
 repos:
+- repo: https://github.com/compilerla/conventional-pre-commit
+  rev: v1.0.0
+  hooks:
+  - id: conventional-pre-commit
+    stages: [commit-msg]
 - repo: https://github.com/ambv/black
   rev: 19.10b0
   hooks:
@@ -34,9 +39,3 @@ repos:
     name: Generate changelog
     entry: bash -c "gitchangelog > CHANGELOG.md"
     stages: [commit]
-- repo: https://github.com/compilerla/conventional-pre-commit
-  rev: v1.0.0
-  hooks:
-  - id: conventional-pre-commit
-    stages: [commit-msg]
-    args: [] # optional: list of Conventional Commits types to allow
