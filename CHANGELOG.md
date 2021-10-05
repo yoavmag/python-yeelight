@@ -1,20 +1,15 @@
 # Changelog
 
 
-## v0.7.6 (2021-10-03)
-
-### Fixes
-
-* Remove writer workaround from #61 with asyncio. [J. Nick Koston]
-
-
-## v0.7.5 (2021-09-19)
+## Unreleased
 
 ### Features
 
 * Improve model detection. [J. Nick Koston]
 
 ### Fixes
+
+* Remove writer workaround from #61 with asyncio. [J. Nick Koston]
 
 * Fix aio disconnect handling. [J. Nick Koston]
 
