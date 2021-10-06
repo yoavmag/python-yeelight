@@ -181,6 +181,12 @@ _MODEL_SPECS = {
         "night_light": False,
         "background_light": False,
     },
+    "lamp3": {
+        "color_temp": {"min": 4000, "max": 4000},
+        "night_light": False,
+        "background_light": False,
+        "bulb_type": BulbType.White,
+    },
     "lamp4": {
         "color_temp": {"min": 2600, "max": 5000},
         "night_light": False,
