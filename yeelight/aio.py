@@ -5,8 +5,6 @@ import logging
 import socket
 from typing import Dict
 
-from future.utils import raise_from
-
 from .enums import LightType
 from .main import _command_to_send_command
 from .main import Bulb
@@ -38,7 +36,7 @@ def _async_command(f):
                 *(await f(*args, **kw)),
                 kw.get("effect", self.effect),
                 kw.get("duration", self.duration),
-                kw.get("power_mode", self.power_mode)
+                kw.get("power_mode", self.power_mode),
             )
         )
         result = cmd.get("result", [])
@@ -90,6 +88,8 @@ class AsyncBulb(Bulb):
 
         command = {"id": request_id, "method": method, "params": params}
         _LOGGER.debug("%s > %s", self, command)
+        if not self._async_writer:
+            raise BulbException("The write socket is closed")
         self._async_writer.write((json.dumps(command) + "\r\n").encode("utf8"))
         _LOGGER.debug("%s: Finished _async_send_command", self)
         return future if create_future else request_id
@@ -115,7 +115,12 @@ class AsyncBulb(Bulb):
                 reader, writer = await asyncio.wait_for(
                     asyncio.open_connection(self._ip, self._port), TIMEOUT
                 )
-            except (asyncio.TimeoutError, socket.error):
+            except (asyncio.TimeoutError, socket.error) as ex:
+                _LOGGER.debug(
+                    "%s: Reconnected failed with %s, backing off",
+                    self,
+                    str(ex) or type(ex),
+                )
                 await asyncio.sleep(TIMEOUT)
             else:
                 _LOGGER.debug("%s: Reconnected successfully", self)
@@ -123,10 +128,12 @@ class AsyncBulb(Bulb):
                 if self._async_callback:
                     self._async_callback({KEY_CONNECTED: True})
                 return
+        _LOGGER.debug("%s: Reconnect loop stopped", self)
 
     async def _async_backoff(self):
-        # back off only if we had a previous failure without a success
+        """Back off only if we had a previous failure without a success."""
         if self._socket_backoff:
+            _LOGGER.debug("%s: Backing off %s seconds", self, TIMEOUT)
             await asyncio.sleep(TIMEOUT)
         self._socket_backoff = True
 
@@ -157,8 +164,19 @@ class AsyncBulb(Bulb):
             except socket.error as ex:
                 _LOGGER.debug("%s: Socket error: %s", self, ex)
                 return
+            except ValueError as ex:
+                _LOGGER.debug("%s: Overran buffer: %s", self, ex)
+                return
+            except BulbException as ex:
+                _LOGGER.warning(
+                    "%s: Socket unexpectedly closed out from under us: %s", self, ex
+                )
+                return
 
-            if line:
+            if line and b"\n" not in line:
+                _LOGGER.debug("%s: Partial read from bulb: %s", self, line)
+                return
+            elif line:
                 self._socket_backoff = False
                 _LOGGER.debug("%s: Success got line: %s", self, line)
                 timeouts = 0
@@ -180,7 +198,7 @@ class AsyncBulb(Bulb):
                     _LOGGER.debug("%s: Ping result received: %s", self, decoded_line)
                     data = {"power": decoded_line["result"][0]}
                     self._set_last_properties(data, update=True)
-                    data.update({KEY_CONNECTED: True})
+                    data[KEY_CONNECTED] = True
                     self._async_callback(data)
                     continue
 
@@ -205,7 +223,10 @@ class AsyncBulb(Bulb):
             self._set_last_properties(decoded_line["params"], update=True)
             data = decoded_line["params"]
             data.update({KEY_CONNECTED: True})
-            self._async_callback(data)
+            try:
+                self._async_callback(data)
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception("Error while processing external callback")
 
     def _async_connected(self, writer, reader):
         """Called when we are successfully connected to the bulb."""
@@ -229,15 +250,18 @@ class AsyncBulb(Bulb):
         :param callable callback: A callback function to receive state update notification.
         """
         self._async_callback = callback
-
         try:
             reader, writer = await asyncio.wait_for(
-                asyncio.open_connection(self._ip, self._port), 10
+                asyncio.open_connection(self._ip, self._port), TIMEOUT
             )
         except asyncio.TimeoutError as ex:
-            raise_from(BulbException("Failed to connecto the the bulb."), ex)
+            raise BulbException(
+                f"Timed out trying to the the bulb at {self._ip}:{self._port}."
+            ) from ex
         except socket.error as ex:
-            raise_from(BulbException("Failed to read from the socket."), ex)
+            raise BulbException(
+                f"Failed to read from the socket at {self._ip}:{self._port}: {ex}."
+            ) from ex
 
         self._is_listening = True
         self._async_connected(writer, reader)
@@ -536,8 +560,8 @@ class AsyncBulb(Bulb):
         return self._cron_del(event_type, **kwargs)
 
     def __repr__(self):
-        return "AsyncBulb<{ip}:{port}, type={type}>".format(
-            ip=self._ip, port=self._port, type=self.bulb_type
+        return "AsyncBulb<{ip}:{port}, type={type}, model={model}>".format(
+            ip=self._ip, port=self._port, type=self.bulb_type, model=self.model
         )
 
     async def async_set_power_mode(self, mode):
