@@ -13,6 +13,8 @@
 
 * Asyncio: Reconnect on protocol errors. [J. Nick Koston]
 
+* Use compact json commands. [J. Nick Koston]
+
 * Remove writer workaround from #61 with asyncio. [J. Nick Koston]
 
 * Fix aio disconnect handling. [J. Nick Koston]
