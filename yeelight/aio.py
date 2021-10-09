@@ -59,12 +59,14 @@ class AsyncBulb(Bulb):
         self._async_writer = None
         self._async_reader = None
         self._async_cmd_id = 0
+        self._async_command_lock = asyncio.Lock()
         self._socket_backoff = False
 
     async def async_send_command(self, method, params):
         """Send a command to the bulb and wait for the result."""
-        future = await self._async_send_command(method, params)
-        response = await asyncio.wait_for(future, TIMEOUT)
+        async with self._async_command_lock:
+            future = await self._async_send_command(method, params)
+            response = await asyncio.wait_for(future, TIMEOUT)
 
         if "error" in response:
             raise BulbException(response["error"])
