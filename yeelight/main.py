@@ -749,11 +749,11 @@ class Bulb(object):
         :returns: The response from the bulb.
         """
         command = {"id": self._cmd_id, "method": method, "params": params}
-
-        _LOGGER.debug("%s > %s", self, command)
+        request = (json.dumps(command, separators=(",", ":")) + "\r\n").encode("utf8")
+        _LOGGER.debug("%s > %s", self, request)
 
         try:
-            self._socket.send((json.dumps(command) + "\r\n").encode("utf8"))
+            self._socket.send(request)
             # This is a workaround for some firmware versions, it seems to help with the
             # "Bulb closed the connection" issue. More discussion can be found in issue #61.
             self._socket.send(b" ")

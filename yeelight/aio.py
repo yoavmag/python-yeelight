@@ -92,10 +92,11 @@ class AsyncBulb(Bulb):
             future.add_done_callback(clean_up)
 
         command = {"id": request_id, "method": method, "params": params}
-        _LOGGER.debug("%s > %s", self, command)
+        request = (json.dumps(command, separators=(",", ":")) + "\r\n").encode("utf8")
+        _LOGGER.debug("%s > %s", self, request)
         if not self._async_writer:
             raise BulbException("The write socket is closed")
-        self._async_writer.write((json.dumps(command) + "\r\n").encode("utf8"))
+        self._async_writer.write(request)
         _LOGGER.debug("%s: Finished _async_send_command", self)
         return future if create_future else request_id
 
