@@ -18,6 +18,9 @@ PING_INTERVAL = 60
 
 KEY_CONNECTED = "connected"
 
+RECONNECT_ERRORS = ("client quota exceeded", "invalid command")
+BACKOFF_ERRORS = ("client quota exceeded",)
+
 
 def _async_command(f):
     """
@@ -206,14 +209,15 @@ class AsyncBulb(Bulb):
 
             if (
                 "error" in decoded_line
-                and decoded_line["error"].get("message") == "client quota exceeded"
+                and decoded_line["error"].get("message") in RECONNECT_ERRORS
             ):
+                message = decoded_line["error"]["message"]
                 _LOGGER.debug(
-                    "%s: client quota exceeded, dropping connection and reconnecting",
-                    self,
+                    "%s: %s, dropping connection and reconnecting", self, message
                 )
-                # Force backoff since reconnect will not clear the quota right away
-                self._socket_backoff = True
+                if message in BACKOFF_ERRORS:
+                    # Force backoff since reconnect will not clear the quota right away
+                    self._socket_backoff = True
                 return
 
             if decoded_line.get("method") != "props":
