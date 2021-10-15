@@ -3,19 +3,29 @@
 
 ## Unreleased
 
+### Fixes
+
+* Use compact json commands. [J. Nick Koston]
+
+* Asyncio: Reconnect on protocol errors. [J. Nick Koston]
+
+* Reduce chance of overloading bulb. [J. Nick Koston]
+
+
+## v0.7.6 (2021-10-03)
+
+### Fixes
+
+* Remove writer workaround from #61 with asyncio. [J. Nick Koston]
+
+
+## v0.7.5 (2021-09-19)
+
 ### Features
 
 * Improve model detection. [J. Nick Koston]
 
 ### Fixes
-
-* Reduce chance of overloading bulb. [J. Nick Koston]
-
-* Asyncio: Reconnect on protocol errors. [J. Nick Koston]
-
-* Use compact json commands. [J. Nick Koston]
-
-* Remove writer workaround from #61 with asyncio. [J. Nick Koston]
 
 * Fix aio disconnect handling. [J. Nick Koston]
 
