@@ -5,17 +5,7 @@
 
 ### Features
 
-* Automatic music mode reconnects. [Alex]
-
-* Implement async music mode. [Alex]
-
-### Fixes
-
-* Last color mode. [Alex]
-
-* Music mode color mode. [Alex]
-
-* Music mode callbacks. [Alex]
+* Implement async music mode (closes #73) [Alex]
 
 
 ## v0.7.8 (2021-10-15)
