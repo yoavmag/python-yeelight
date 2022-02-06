@@ -32,7 +32,11 @@ setup(
     classifiers=classifiers,
     packages=["yeelight"],
     python_requires=">=3.4",
-    install_requires=["future", "ifaddr", 'pypiwin32;platform_system=="Windows"',],
+    install_requires=[
+        "future",
+        "ifaddr",
+        'pypiwin32;platform_system=="Windows"',
+    ],
     test_suite="yeelight.tests",
     tests_require=[],
 )

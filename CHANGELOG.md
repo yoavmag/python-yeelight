@@ -3,6 +3,23 @@
 
 ## Unreleased
 
+### Features
+
+* Automatic music mode reconnects. [Alex]
+
+* Implement async music mode. [Alex]
+
+### Fixes
+
+* Last color mode. [Alex]
+
+* Music mode color mode. [Alex]
+
+* Music mode callbacks. [Alex]
+
+
+## v0.7.8 (2021-10-15)
+
 ### Fixes
 
 * Use compact json commands. [J. Nick Koston]

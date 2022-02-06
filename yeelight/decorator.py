@@ -45,7 +45,6 @@ if sys.version >= "3":
     def get_init(cls):
         return cls.__init__
 
-
 else:
 
     class getfullargspec(object):  # type: ignore
@@ -271,7 +270,11 @@ def decorator(caller, _func=None):
         name = caller.__name__.lower()
         doc = (
             "decorator(%s) converts functions/generators into "
-            "factories of %s objects" % (caller.__name__, caller.__name__,)
+            "factories of %s objects"
+            % (
+                caller.__name__,
+                caller.__name__,
+            )
         )
     elif inspect.isfunction(caller):
         if caller.__name__ == "<lambda>":

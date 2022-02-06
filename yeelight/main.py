@@ -316,6 +316,12 @@ def _command_to_send_command(
                 update_props = {
                     set_prop[prop]: params[prop] for prop in range(len(set_prop))
                 }
+                if "rgb" in method:
+                    update_props["color_mode"] = 1
+                elif "ct" in method:
+                    update_props["color_mode"] = 2
+                elif "hsv" in method:
+                    update_props["color_mode"] = 3
                 _LOGGER.debug("Music mode cache update: %s", update_props)
                 self._last_properties.update(update_props)
         # Add the effect parameters.
@@ -699,7 +705,9 @@ class Bulb(object):
         self._last_properties["current_brightness"] = cb
 
     def get_properties(
-        self, requested_properties=DEFAULT_PROPS, ssdp_fallback=False,
+        self,
+        requested_properties=DEFAULT_PROPS,
+        ssdp_fallback=False,
     ):
         """
         Retrieve and return the properties of the bulb.

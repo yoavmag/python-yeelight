@@ -6,19 +6,16 @@ stages:
 
 static_check:
   stage: test
+  image: python:3.9
   before_script:
-    - apt-get update
-    - apt-get install -y git
-    - pip3.6 install -r requirements_dev.txt
-
+    - pip install pre-commit gitchangelog
   script:
-    - $(find /.pyenv/versions -name pre-commit) run -a --hook-stage=manual
+    - pre-commit run -a --hook-stage=manual
 
 tests:
   stage: test
   script:
   - tox
-
 
 docs:
   before_script:
@@ -29,7 +26,6 @@ docs:
   - pip3.6 install .
   - cd docs/
   - $(find /.pyenv/versions -name sphinx-build) -b html -d build/doctrees -W source build/html
-
 
 pypi:
   image: python:3.8
