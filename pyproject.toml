@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yeelight"
-version = "0.7.9"
+version = "0.7.10"
 
 [build-system]
 requires = ["flit_core >=2,<3"]

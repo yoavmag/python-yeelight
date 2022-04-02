@@ -9,17 +9,7 @@
 
 ### Fixes
 
-* Prevent duplicate music mode connections. [Alex]
-
-* Keep music mode connection online using pings. [Alex]
-
-* Clear socket backoff when connected in music mode. [Alex]
-
-* Turn music mode off when light is turned off. [Alex]
-
-* Disable backoffs when turned off in music mode. [Alex]
-
-* Prevent sending disconnects on music mode connections. [Alex]
+* Various async music mode bug fixes. [Alex]
 
 
 ## v0.7.9 (2022-02-06)
