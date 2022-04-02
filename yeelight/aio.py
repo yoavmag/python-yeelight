@@ -5,6 +5,7 @@ import json
 import logging
 import socket
 from typing import Dict
+from typing import Optional
 
 from .enums import LightType
 from .main import _command_to_send_command
@@ -65,12 +66,24 @@ class AsyncBulb(Bulb):
         self._async_cmd_id = 0
         self._async_command_lock = asyncio.Lock()
         self._socket_backoff = False
+        self._listen_event: Optional[asyncio.Event] = None
         self._music_mode_params = None
+        # Prevent sending disconnects if disconnecting for music mode connection
+        self._music_expect_disconnect = False
+        self._music_mode_lock = asyncio.Lock()
 
     async def async_send_command(self, method, params):
         """Send a command to the bulb and wait for the result."""
-        async with self._async_command_lock:
-            if self._music_mode:
+        # Prevent changes to music mode while sending a command
+        # unless we are currently activating music mode
+        # this prevents sending a command while we are trying to connect
+        # and causing a hang while waiting for the response
+        if self._async_command_lock.locked() and method == "set_music":
+            command_lock = contextlib.AsyncExitStack()
+        else:
+            command_lock = self._async_command_lock
+        async with command_lock:
+            if self._music_mode_state:
                 await self._async_send_command(method, params, create_future=False)
                 # We can't check if it worked, so we just assume it did
                 if self._async_callback:
@@ -101,7 +114,7 @@ class AsyncBulb(Bulb):
 
         command = {"id": request_id, "method": method, "params": params}
         request = (json.dumps(command, separators=(",", ":")) + "\r\n").encode("utf8")
-        _LOGGER.debug("%s > %s", self, request)
+        _LOGGER.debug("%s: > %s", self, request)
         if not self._async_writer:
             raise BulbException("The write socket is closed")
         self._async_writer.write(request)
@@ -113,14 +126,28 @@ class AsyncBulb(Bulb):
         _LOGGER.debug("%s: Starting listen task", self)
         while self._is_listening:
             try:
+                _LOGGER.debug("%s: Starting connection loop", self)
                 await self._async_connection_loop()
             finally:
+                _LOGGER.debug("%s: Listen task finalizing", self)
                 await self._async_close_reader_writer()
-                if self._async_callback:
+                # if its not related to either
+                # 1. Music mode turning on/off
+                # 2. light being turned off
+                if (
+                    self._async_callback
+                    and not self._music_expect_disconnect
+                    and not self._music_mode_lock.locked()
+                ):
+                    _LOGGER.debug("%s: Sending disconnect callback", self)
                     self._async_callback({KEY_CONNECTED: False})
                 if self._is_listening:
-                    await self._async_backoff()
+                    # Don't backoff if we expect to be disconnected
+                    # e.g. if the light is turned off
+                    if not self._music_expect_disconnect:
+                        await self._async_backoff()
                     await self._async_reconnect_loop()
+                self._music_expect_disconnect = False
 
     async def _async_reconnect_loop(self):
         _LOGGER.debug("%s: Starting reconnect", self)
@@ -141,11 +168,13 @@ class AsyncBulb(Bulb):
                 self._async_connected(writer, reader)
                 if self._async_callback:
                     self._async_callback({KEY_CONNECTED: True})
+                # If connection drops without the light being turned off
+                # no longer in music mode if we were in it
+                self._music_mode_state = False
                 if self._music_mode:
-                    # Let user know we are no longer in music mode and try to re-enable it
-                    self._music_mode = False
                     # Need to run this separately as starting music mode cancels this task
-                    asyncio.create_task(self.async_start_music(reconnect=True))
+                    # and starting music mode will require a connection to the bulb
+                    asyncio.ensure_future(self.async_start_music(reconnect=True))
                 return
 
         _LOGGER.debug("%s: Reconnect loop stopped", self)
@@ -163,15 +192,37 @@ class AsyncBulb(Bulb):
         assert self._async_reader is not None
         while self._is_listening:
             try:
-                _LOGGER.debug("%s: Waiting for line", self)
-                # Don't expect a response in music mode
-                if self._music_mode:
-                    line = await self._async_reader.readline()
-                else:
-                    line = await asyncio.wait_for(
-                        self._async_reader.readline(), PING_INTERVAL + TIMEOUT
-                    )
+                _LOGGER.debug(
+                    "%s: Waiting for line, music_mode_state: %s",
+                    self,
+                    self._music_mode_state,
+                )
+                if self._listen_event:
+                    self._listen_event.set()
+                if self._music_mode_state:
+                    # Force clear backoff if we are in music mode
+                    # We will not receive any messages
+                    # so there is no opportunity to back off
+                    self._socket_backoff = False
+                line = await asyncio.wait_for(
+                    self._async_reader.readline(), PING_INTERVAL + TIMEOUT
+                )
             except asyncio.TimeoutError:
+                # Since we can't get a response from the light in music mode
+                # ping the light to keep the connection alive
+                if self._music_mode_state:
+                    _LOGGER.debug(
+                        "%s: Pinging bulb in music mode after %s",
+                        self,
+                        PING_INTERVAL + TIMEOUT,
+                    )
+                    if self._last_properties["power"] == "on":
+                        await self.async_turn_on()
+                    else:
+                        # This should rarely happen as music mode is by default turned off
+                        # when the light is turned off
+                        await self.async_turn_off(is_ping=True)
+                    continue
                 timeouts += 1
                 if timeouts == 2:
                     _LOGGER.debug("%s: Timeout waiting for line", self)
@@ -205,7 +256,11 @@ class AsyncBulb(Bulb):
                 _LOGGER.debug("%s: Success got line: %s", self, line)
                 timeouts = 0
             else:
-                _LOGGER.debug("%s: Bulb closed the connection", self)
+                _LOGGER.debug(
+                    "%s: Bulb closed the connection, music_expect_disconnect: %s",
+                    self,
+                    self._music_expect_disconnect,
+                )
                 return
 
             try:
@@ -304,7 +359,9 @@ class AsyncBulb(Bulb):
             # Need to ignore socket errors if it was dropped
             with contextlib.suppress(socket.error):
                 self._async_writer.close()
-                await self._async_writer.wait_closed()
+                await asyncio.wait_for(
+                    self._async_writer.wait_closed(), timeout=TIMEOUT
+                )
             self._async_writer = None
         self._async_reader = None
 
@@ -316,7 +373,9 @@ class AsyncBulb(Bulb):
         if remove_callback:
             self._async_callback = None
 
-    async def async_get_properties(self, requested_properties=DEFAULT_PROPS):
+    async def async_get_properties(
+        self, requested_properties=DEFAULT_PROPS, when_on=False
+    ):
         """
         Retrieve and return the properties of the bulb.
 
@@ -328,28 +387,40 @@ class AsyncBulb(Bulb):
 
         :param list requested_properties: The list of properties to request from the bulb.
                                           By default, this does not include ``flow_params``.
+        :param bool when_on: Only refresh if on.
 
         :returns: A dictionary of param: value items.
         :rtype: dict
         """
-        # When we are in music mode, the bulb does not respond to queries
-        # therefore we need to keep the state up-to-date ourselves
-        if self._music_mode:
+        # when_on_music is only called when reconnecting to music mode
+        # ignores music mode flag and only refreshes if on
+        if (
+            when_on and self._last_properties["power"] != "on"
+        ) or self._music_mode_state:
             return self._last_properties
 
         response = await self.async_send_command("get_prop", requested_properties)
+        # do a second check here because music mode could have been enabled
+        # while the command was queued this would cause an incorrect response
+        # {'power': 'ok', 'current_brightness': None}
+        if self._music_mode_state:
+            return self._last_properties
         if response is not None and "result" in response:
             properties = response["result"]
             properties = [x if x else None for x in properties]
             new_values = dict(zip(requested_properties, properties))
 
-        self._set_last_properties(new_values, update=False)
+            # this was a music mode response, so ignore this update
+            if new_values["power"] == "ok":
+                return self._last_properties
+
+            self._set_last_properties(new_values, update=False)
 
         return self._last_properties
 
     async def async_ensure_on(self):
         """Turn the bulb on if it is off."""
-        if self._music_mode is True or self.auto_on is False:
+        if self._music_mode_state is True or self.auto_on is False:
             return
 
         await self.async_get_properties()
@@ -443,12 +514,20 @@ class AsyncBulb(Bulb):
         return self._turn_on(light_type=light_type, **kwargs)
 
     @_async_command
-    async def async_turn_off(self, light_type=LightType.Main, **kwargs):
+    async def async_turn_off(
+        self, light_type=LightType.Main, is_ping: bool = False, **kwargs
+    ):
         """
         Turn the bulb off.
 
         :param yeelight.LightType light_type: Light type to control.
+        :param bool is_ping: If true, don't disable music mode.
         """
+        # Turning off implicitly disables music mode.
+        # Prevent sending disconnects
+        if self._music_mode and not is_ping:
+            self._music_expect_disconnect = True
+            self._music_mode = False
         return self._turn_off(light_type=light_type, **kwargs)
 
     @_async_command
@@ -621,65 +700,125 @@ class AsyncBulb(Bulb):
 
         :param str ip: The IP address of the host this library is running on.
                        Will be discovered automatically if not provided.
+
+        :param bool reconnect: Whether to reconnect to the bulb after disconnecting
         """
-        if reconnect:
-            # Music mode is enabled but we're not connected.
-            # Attempt to retrieve original parameters passed
-            port, ip = self._music_mode_params or (port, ip)
-        elif self._music_mode:
-            # Music mode is enabled and we're already connected.
-            raise AssertionError("Already in music mode, please stop music mode first.")
+        async with self._music_mode_lock:
+            if self._music_mode and not reconnect:
+                # Music mode is enabled and we're already connected.
+                raise AssertionError(
+                    "Already in music mode, please stop music mode first."
+                )
 
-        # Force populating the cache in case we are being called directly
-        # without ever fetching properties beforehand
-        await self.async_get_properties()
-        # await self.async_ensure_on()
+            if self._music_mode_state:
+                _LOGGER.debug("%s: Already in music mode", self)
+                return "ok"
 
-        future = asyncio.Future()
-        # The bulb doesn't send anything in music mode
+            if reconnect:
+                _LOGGER.debug("%s: Starting music mode reconnect", self)
+                # Music mode is enabled but we're not connected.
+                # Attempt to retrieve original parameters passed
+                port, ip = self._music_mode_params or (port, ip)
+                # Attempt to retrieve latest properties if on
+                await self.async_get_properties(when_on=True)
+            else:
+                _LOGGER.debug("%s: Starting music mode", self)
+                self._music_mode = True
+                # Force populating the cache in case we are being called directly
+                # without ever fetching properties beforehand
+                await self.async_get_properties()
 
-        def on_connect(reader, writer):
-            server.close()
-            future.set_result((reader, writer))
+            future = asyncio.Future()
 
-        local_ip = ip if ip else self._socket.getsockname()[0]
-        server = await asyncio.start_server(
-            on_connect, local_ip, port, reuse_address=True
-        )
-        port = server.sockets[0].getsockname()[1]
-        await self.async_send_command("set_music", [1, local_ip, port])
-        await self.async_stop_listening(False)
-        reader, writer = await asyncio.wait_for(future, TIMEOUT)
-        self._async_writer = writer
-        self._async_reader = reader
-        # Manually enable listener to watch for disconnects
-        self._is_listening = True
-        self._async_listen_task = asyncio.ensure_future(self._async_run_listen())
-        # We are now connected
-        if self._async_callback:
-            self._async_callback({KEY_CONNECTED: True})
+            # The bulb doesn't send anything in music mode
 
-        self._music_mode_params = (port, ip)
-        self._music_mode = True
+            def on_connect(reader, writer):
+                server.close()
+                future.set_result((reader, writer))
 
-        if reconnect:
-            _LOGGER.debug("%s: Music mode reconnected successfully", self)
+            local_ip = ip if ip else self._socket.getsockname()[0]
+            server = await asyncio.start_server(
+                on_connect, local_ip, port, reuse_address=True
+            )
+            port = server.sockets[0].getsockname()[1]
+            # hold the lock until we are fully enabled
+            async with self._async_command_lock:
+                await self.async_send_command("set_music", [1, local_ip, port])
+                await self.async_stop_listening(False)
+                try:
+                    reader, writer = await asyncio.wait_for(
+                        asyncio.shield(future), timeout=0.5
+                    )
+                except asyncio.TimeoutError:
+                    # send a disconnected callback if we can't connect quickly
+                    # then continue waiting to try to connect
+                    _LOGGER.debug("%s: Failed to connect to music mode quickly", self)
+                    if self._async_callback:
+                        self._async_callback({KEY_CONNECTED: False})
+                    try:
+                        reader, writer = await asyncio.wait_for(
+                            future, timeout=TIMEOUT - 0.5
+                        )
+                    except asyncio.TimeoutError as ex:
+                        # Ensures a full reconnect to the bulb
+                        await self.async_stop_music(force=True)
+                        raise BulbException(
+                            f"Timed out enabling music mode on the bulb at {self._ip}:{self._port}."
+                        ) from ex
+                # Manually enable listener to watch for disconnects
+                self._is_listening = True
+                self._async_connected(writer, reader)
+                self._music_mode_state = True
+                self._listen_event = asyncio.Event()
+                self._async_listen_task = asyncio.ensure_future(
+                    self._async_run_listen()
+                )
+                try:
+                    await asyncio.wait_for(self._listen_event.wait(), timeout=TIMEOUT)
+                except asyncio.TimeoutError:
+                    # this shouldn't ever happen
+                    _LOGGER.debug("%s: Listener failed to start in music mode", self)
+                    await self.async_stop_music(force=True)
+                    if self._async_callback:
+                        self._async_callback({KEY_CONNECTED: False})
+                    raise BulbException(
+                        f"Timed out waiting for listener on the bulb at {self._ip}:{self._port}."
+                    )
+            # We are now connected
+            if self._async_callback:
+                self._async_callback({KEY_CONNECTED: True})
 
-        return "ok"
+            self._music_mode_params = (port, ip)
 
-    async def async_stop_music(self, **kwargs):
+            if reconnect:
+                _LOGGER.debug("%s: Music mode reconnected successfully", self)
+            else:
+                _LOGGER.debug("%s: Music mode started successfully", self)
+
+            return "ok"
+
+    async def async_stop_music(self, force=False, **kwargs):
         """
         Stop music mode.
 
         Stopping music mode will close the previous connection. Calling
         ``stop_music`` more than once, or while not in music mode, is safe.
+        :param bool force: Whether to force stop music mode (during exception when enabling)
         """
-        if not self._music_mode:
+        self._music_mode = False
+
+        if not self._music_mode_state and not force:
+            _LOGGER.debug(
+                "%s: Music mode was not enabled but async_stop_music was called",
+                self,
+            )
             return
 
         # flush out music mode socket
+        self._music_expect_disconnect = True
         await self.async_stop_listening(False)
+        self._music_expect_disconnect = False
+        self._music_mode_state = False
 
         await self.async_listen(self._async_callback)
-        self._music_mode = False
         return "set_music", [0], kwargs

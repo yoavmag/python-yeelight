@@ -287,7 +287,7 @@ def _command_to_send_command(
         "bg_set_power",
         "bg_toggle",
     ]:
-        if self._music_mode:
+        if self._music_mode or self._music_mode_state:
             # Mapping calls to their properties.
             # Used to keep music mode cache up to date.
             action_property_map = {
@@ -469,6 +469,14 @@ class Bulb(object):
         self._last_properties = {}  # The last set of properties we've seen.
         self._capabilities = {}  # Capabilites obtained via SSDP Discovery.
         self._music_mode = False  # Whether we're currently in music mode.
+        # When aio is used, this additional variable is used internally
+        # because aio tracks the intended music mode/not music mode state
+        # as well as the actual bulb connection state. This is required
+        # because the sync module does not update or use this variable.
+        # In aio, _music_mode is used as the wanted state.
+        # _music_mode_state is the current bulb connection type.
+        self._music_mode_state = False
+
         self.__socket = None  # The socket we use to communicate.
 
         self._notification_socket = None  # The socket to get update notifications
@@ -640,6 +648,18 @@ class Bulb(object):
         :return: True if music mode is on, False otherwise.
         """
         return self._music_mode
+
+    @property
+    def music_mode_state(self):
+        """
+        Return whether the connection is music mode (aio only).
+
+        When using the sync module, this variable is ignored and not updated.
+
+        :rtype: bool
+        :return: True if music mode is connected, False otherwise.
+        """
+        return self._music_mode_state
 
     def listen(self, callback):
         """
