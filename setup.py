@@ -11,11 +11,12 @@ with open("yeelight/version.py") as f:
 classifiers = [
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
@@ -31,7 +32,7 @@ setup(
     license="BSD",
     classifiers=classifiers,
     packages=["yeelight"],
-    python_requires=">=3.4",
+    python_requires=">=3.6",
     install_requires=[
         "future",
         "ifaddr",
