@@ -352,3 +352,19 @@ def candle_flicker():
         TemperatureTransition(degrees=2700, duration=400, brightness=70),
     ]
     return Flow(count=0, action=Action.recover, transitions=transitions)
+
+
+def tea_time(duration=500, brightness=50):
+    """
+    Warm, cozy light.
+
+    :param int duration: The duration to fade to next color, in milliseconds.
+    :param int brightness: The brightness of the transition.
+
+    :returns: An infinite Flow consisting of 1 transition.
+    :rtype: Flow
+    """
+    transition = [
+        TemperatureTransition(degrees=3000, duration=duration, brightness=brightness)
+    ]
+    return Flow(count=0, action=Action.recover, transitions=transition)

@@ -5,6 +5,13 @@
 
 ### Features
 
+* Add "Tea Time" effect. [Daniel Rheinbay]
+
+
+## v0.7.10 (2022-04-02)
+
+### Features
+
 * Add "ceilc" model (closes #76) [Stavros Korokithakis]
 
 ### Fixes

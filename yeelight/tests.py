@@ -360,6 +360,12 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.socket.sent["method"], "set_scene")
         self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 2, 3200, 80"])
 
+    def test_tea_time(self):
+        flow = flows.tea_time()
+        self.bulb.set_scene(SceneClass.CF, flow)
+        self.assertEqual(self.socket.sent["method"], "set_scene")
+        self.assertEqual(self.socket.sent["params"], ["cf", 0, 0, "500, 2, 3000, 50"])
+
     def test_night_mode(self):
         flow = flows.night_mode()
         self.bulb.set_scene(SceneClass.CF, flow)
