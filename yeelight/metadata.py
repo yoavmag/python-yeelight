@@ -4,16 +4,19 @@ Project metadata.
 
 Information describing the project.
 """
-from .version import __version__
+try:
+    from importlib.metadata import metadata
+except ImportError:
+    from importlib_metadata import metadata  # type: ignore
+
 
 # The package name, which is also the "UNIX name" for the project.
 package = "yeelight"
 project = "python-yeelight"
 project_no_spaces = project.replace(" ", "")
-version = __version__
-description = (
-    "yeelight is a Python library for controlling YeeLight WiFi RGB" " LED bulbs."
-)
+_package_metadata = metadata(package)
+version = _package_metadata["Version"]
+description = _package_metadata["Summary"]
 authors = ["Stavros Korokithakis"]
 authors_string = ", ".join(authors)
 emails = ["hi@stavros.io"]
