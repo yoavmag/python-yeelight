@@ -19,11 +19,11 @@ tests:
 
 docs:
   before_script:
-    - pip3.6 install --upgrade pip
-    - pip3.6 install -r requirements_dev.txt
+    - pip3.8 install --upgrade pip
+    - pip3.8 install -r requirements_dev.txt
 
   script:
-  - pip3.6 install .
+  - pip3.8 install .
   - cd docs/
   - $(find /.pyenv/versions -name sphinx-build) -b html -d build/doctrees -W source build/html
 

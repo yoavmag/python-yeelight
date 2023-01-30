@@ -29,7 +29,6 @@ class Flow(object):
         A complete flow, consisting of one or multiple transitions.
 
         Example:
-        -------
         >>> transitions = [RGBTransition(255, 0, 0), SleepTransition(400)]
         >>> Flow(3, Flow.actions.recover, transitions)
 
