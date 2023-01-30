@@ -5,6 +5,8 @@
 
 ### Features
 
+* Modernize PEP517 build. [Michał Górny]
+
 * Add "Tea Time" effect. [Daniel Rheinbay]
 
 

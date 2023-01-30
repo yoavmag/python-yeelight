@@ -69,6 +69,7 @@ def parse_capabilities(data):
     :param string data: Original data from SSDP discovery from the bulb.
 
     Example:
+    -------
     'HTTP/1.1 200 OK
     Cache-Control: max-age=3600
     Date:
@@ -83,6 +84,7 @@ def parse_capabilities(data):
     :return: Parsed response as dict.
 
     Example:
+    -------
     {
         'Location': 'yeelight://10.0.7.184:55443',
         'Server': 'POSIX UPnP/1.0 YGLC/1',

@@ -41,3 +41,23 @@ dev = [
     "Sphinx",
     "sphinx-rtd-theme",
 ]
+
+[tool.ruff]
+select = ["E", "F", "D"]
+ignore = [
+  "D100",
+  "D101",
+  "D102",
+  "D103",
+  "D105",
+  "D106",
+  "D107",
+  "D203",
+  "D212",
+  "D401",
+  "D417",
+  "E501",
+]
+
+[tool.ruff.per-file-ignores]
+"yeelight/aio.py" = ["D401"]

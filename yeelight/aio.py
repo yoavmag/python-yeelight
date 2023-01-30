@@ -597,7 +597,8 @@ class AsyncBulb(Bulb):
 
         * `COLOR` changes the light to the specified RGB color and brightness.
 
-            Arguments:
+        Arguments:
+        ---------
             * **red** (*int*)         – The red value to set (0-255).
             * **green** (*int*)       – The green value to set (0-255).
             * **blue** (*int*)        – The blue value to set (0-255).
@@ -605,27 +606,31 @@ class AsyncBulb(Bulb):
 
         * `HSV` changes the light to the specified HSV color and brightness.
 
-            Arguments:
+        Arguments:
+        ---------
             * **hue** (*int*)         – The hue to set (0-359).
             * **saturation** (*int*)  – The saturation to set (0-100).
             * **brightness** (*int*)  – The brightness value to set (1-100).
 
         * `CT` changes the light to the specified color temperature.
 
-            Arguments:
+        Arguments:
+        ---------
             * **degrees** (*int*)     – The degrees to set the color temperature to (min/max are specified by the
             model's capabilities, or 1700-6500).
             * **brightness** (*int*)  – The brightness value to set (1-100).
 
         * `CF` starts a color flow.
 
-            Arguments:
+        Arguments:
+        ---------
             * **flow** (`yeelight.Flow`)  – The Flow instance to start.
 
         * `AUTO_DELAY_OFF` turns the light on to the specified brightness and sets a timer to turn it back off after the
           given number of minutes.
 
-            Arguments:
+        Arguments:
+        ---------
             * **brightness** (*int*)     – The brightness value to set (1-100).
             * **minutes** (*int*)        – The minutes to wait before automatically turning the light off.
 
