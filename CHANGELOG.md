@@ -5,6 +5,8 @@
 
 ### Features
 
+* Add support for MJDPL04YL (color5) [Andrea Ghensi]
+
 * Modernize PEP517 build. [Michał Górny]
 
 * Add "Tea Time" effect. [Daniel Rheinbay]
