@@ -51,6 +51,11 @@ more details.
 
 The library also contains a (currently undocumented) asyncio interface.
 
+Supported Devices
+-----------------
+
+See [the documentation](https://yeelight.readthedocs.io/en/stable/devices.html) for a list of supported devices.
+
 Contributing
 ------------
 

@@ -241,5 +241,6 @@ You can also use ``asyncio`` event loop::
 
    Home <self>
    flow
+   devices
    API documentation <yeelight>
    genindex
