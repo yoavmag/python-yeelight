@@ -156,6 +156,7 @@ class AsyncBulb(Bulb):
                 reader, writer = await asyncio.wait_for(
                     asyncio.open_connection(self._ip, self._port), TIMEOUT
                 )
+                await asyncio.sleep(0.1)
             except (asyncio.TimeoutError, socket.error) as ex:
                 _LOGGER.debug(
                     "%s: Reconnected failed with %s, backing off",
@@ -174,7 +175,9 @@ class AsyncBulb(Bulb):
                 if self._music_mode:
                     # Need to run this separately as starting music mode cancels this task
                     # and starting music mode will require a connection to the bulb
-                    asyncio.ensure_future(self.async_start_music(reconnect=True))
+                    self._async_music_task = asyncio.ensure_future(
+                        self.async_start_music(reconnect=True)
+                    )
                 return
 
         _LOGGER.debug("%s: Reconnect loop stopped", self)
@@ -334,6 +337,7 @@ class AsyncBulb(Bulb):
             reader, writer = await asyncio.wait_for(
                 asyncio.open_connection(self._ip, self._port), TIMEOUT
             )
+            await asyncio.sleep(0.1)
         except asyncio.TimeoutError as ex:
             raise BulbException(
                 f"Timed out trying to the the bulb at {self._ip}:{self._port}."
