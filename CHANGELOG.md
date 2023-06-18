@@ -11,6 +11,10 @@
 
 * Add "Tea Time" effect. [Daniel Rheinbay]
 
+### Fixes
+
+* Fix race condition with asyncio. [Jermeia]
+
 
 ## v0.7.10 (2022-04-02)
 
