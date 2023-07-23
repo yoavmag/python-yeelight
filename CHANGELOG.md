@@ -1,6 +1,13 @@
 # Changelog
 
 
+## Unreleased
+
+### Fixes
+
+* Switch to using asyncio.timeout/async_timeout to avoid races with asyncio.wait_for. [J. Nick Koston]
+
+
 ## v0.7.11 (2023-06-18)
 
 ### Features
