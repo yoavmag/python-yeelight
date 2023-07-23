@@ -4,6 +4,7 @@ import contextlib
 import json
 import logging
 import socket
+import sys
 from typing import Dict
 from typing import Optional
 
@@ -12,6 +13,12 @@ from .main import _command_to_send_command
 from .main import Bulb
 from .main import BulbException
 from .main import DEFAULT_PROPS
+
+if sys.version_info[:2] < (3, 11):
+    from async_timeout import timeout as asyncio_timeout
+else:
+    from asyncio import timeout as asyncio_timeout
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -90,7 +97,8 @@ class AsyncBulb(Bulb):
                     self._async_callback({"result": ["ok"]})
                 return {"result": ["ok"]}
             future = await self._async_send_command(method, params)
-            response = await asyncio.wait_for(future, TIMEOUT)
+            async with asyncio_timeout(TIMEOUT):
+                response = await future
 
         if "error" in response:
             raise BulbException(response["error"])
@@ -153,9 +161,8 @@ class AsyncBulb(Bulb):
         _LOGGER.debug("%s: Starting reconnect", self)
         while self._is_listening:
             try:
-                reader, writer = await asyncio.wait_for(
-                    asyncio.open_connection(self._ip, self._port), TIMEOUT
-                )
+                async with asyncio_timeout(TIMEOUT):
+                    reader, writer = await asyncio.open_connection(self._ip, self._port)
                 await asyncio.sleep(0.1)
             except (asyncio.TimeoutError, socket.error) as ex:
                 _LOGGER.debug(
@@ -207,9 +214,8 @@ class AsyncBulb(Bulb):
                     # We will not receive any messages
                     # so there is no opportunity to back off
                     self._socket_backoff = False
-                line = await asyncio.wait_for(
-                    self._async_reader.readline(), PING_INTERVAL + TIMEOUT
-                )
+                async with asyncio_timeout(PING_INTERVAL + TIMEOUT):
+                    line = await self._async_reader.readline()
             except asyncio.TimeoutError:
                 # Since we can't get a response from the light in music mode
                 # ping the light to keep the connection alive
@@ -334,9 +340,8 @@ class AsyncBulb(Bulb):
         """
         self._async_callback = callback
         try:
-            reader, writer = await asyncio.wait_for(
-                asyncio.open_connection(self._ip, self._port), TIMEOUT
-            )
+            async with asyncio_timeout(TIMEOUT):
+                reader, writer = await asyncio.open_connection(self._ip, self._port)
             await asyncio.sleep(0.1)
         except asyncio.TimeoutError as ex:
             raise BulbException(
@@ -363,9 +368,8 @@ class AsyncBulb(Bulb):
             # Need to ignore socket errors if it was dropped
             with contextlib.suppress(socket.error):
                 self._async_writer.close()
-                await asyncio.wait_for(
-                    self._async_writer.wait_closed(), timeout=TIMEOUT
-                )
+                async with asyncio_timeout(TIMEOUT):
+                    await self._async_writer.wait_closed()
             self._async_writer = None
         self._async_reader = None
 
@@ -750,9 +754,8 @@ class AsyncBulb(Bulb):
                 await self.async_send_command("set_music", [1, local_ip, port])
                 await self.async_stop_listening(False)
                 try:
-                    reader, writer = await asyncio.wait_for(
-                        asyncio.shield(future), timeout=0.5
-                    )
+                    async with asyncio_timeout(0.5):
+                        reader, writer = await asyncio.shield(future)
                 except asyncio.TimeoutError:
                     # send a disconnected callback if we can't connect quickly
                     # then continue waiting to try to connect
@@ -760,9 +763,8 @@ class AsyncBulb(Bulb):
                     if self._async_callback:
                         self._async_callback({KEY_CONNECTED: False})
                     try:
-                        reader, writer = await asyncio.wait_for(
-                            future, timeout=TIMEOUT - 0.5
-                        )
+                        async with asyncio_timeout(TIMEOUT - 0.5):
+                            reader, writer = await future
                     except asyncio.TimeoutError as ex:
                         # Ensures a full reconnect to the bulb
                         await self.async_stop_music(force=True)
@@ -778,7 +780,8 @@ class AsyncBulb(Bulb):
                     self._async_run_listen()
                 )
                 try:
-                    await asyncio.wait_for(self._listen_event.wait(), timeout=TIMEOUT)
+                    async with asyncio_timeout(TIMEOUT):
+                        await self._listen_event.wait()
                 except asyncio.TimeoutError:
                     # this shouldn't ever happen
                     _LOGGER.debug("%s: Listener failed to start in music mode", self)
