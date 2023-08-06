@@ -5,6 +5,13 @@
 
 ### Fixes
 
+* Fix writer close race condition. [alexyao2015]
+
+
+## v0.7.12 (2023-07-23)
+
+### Fixes
+
 * Switch to using asyncio.timeout/async_timeout to avoid races with asyncio.wait_for. [J. Nick Koston]
 
 

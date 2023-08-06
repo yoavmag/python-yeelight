@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "yeelight"
-version = "0.7.12"
+version = "0.7.13"
 dynamic = ["description"]
 readme = "README.md"
 requires-python = ">=3.4"
