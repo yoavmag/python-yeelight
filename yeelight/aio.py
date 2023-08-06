@@ -365,12 +365,17 @@ class AsyncBulb(Bulb):
     async def _async_close_reader_writer(self):
         self._async_pending_commands = {}
         if self._async_writer:
+            # This is called both in async_stop_listening and
+            # when the connection is dropped. Clear out the writer
+            # first so it doesn't try to close a already closed writer
+            writer = self._async_writer
+            self._async_writer = None
+
             # Need to ignore socket errors if it was dropped
             with contextlib.suppress(socket.error):
-                self._async_writer.close()
+                writer.close()
                 async with asyncio_timeout(TIMEOUT):
-                    await self._async_writer.wait_closed()
-            self._async_writer = None
+                    await writer.wait_closed()
         self._async_reader = None
 
     async def async_stop_listening(self, remove_callback=True):
