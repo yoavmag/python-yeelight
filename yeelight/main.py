@@ -81,6 +81,11 @@ _MODEL_SPECS = {
         "night_light": True,
         "background_light": True,
     },
+    "ceild": {
+        "color_temp": {"min": 3000, "max": 6500},
+        "night_light": True,
+        "background_light": False,
+    },
     "ceiling10": {
         "color_temp": {"min": 2700, "max": 6500},
         "night_light": True,
