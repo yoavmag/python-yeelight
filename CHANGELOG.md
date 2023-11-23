@@ -1,6 +1,13 @@
 # Changelog
 
 
+## Unreleased
+
+### Features
+
+* Add ceild (implements #90) [Stavros Korokithakis]
+
+
 ## v0.7.13 (2023-08-06)
 
 ### Fixes
