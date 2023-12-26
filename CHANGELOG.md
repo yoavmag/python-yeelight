@@ -5,6 +5,13 @@
 
 ### Features
 
+* Add bulb: yeelink.light.mono6. [PaulK]
+
+
+## v0.7.14 (2023-11-23)
+
+### Features
+
 * Add ceild (implements #90) [Stavros Korokithakis]
 
 
