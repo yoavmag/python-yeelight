@@ -23,7 +23,6 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "future",
     "ifaddr",
     "importlib_metadata; python_version<'3.8'",
     "async-timeout; python_version<'3.11'"

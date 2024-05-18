@@ -7,7 +7,6 @@ sphinx-rtd-theme
 
 pytest
 coverage
-future
 pytest-cov
 
 gitchangelog

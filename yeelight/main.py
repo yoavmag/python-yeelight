@@ -4,8 +4,6 @@ import json
 import logging
 import socket
 
-from future.utils import raise_from
-
 from .decorator import decorator  # type: ignore
 from .enums import BulbType
 from .enums import LightType
@@ -722,7 +720,7 @@ class Bulb(object):
                 return
             self._notification_socket.close()
             self._notification_socket = None
-            raise_from(BulbException("Failed to read from the socket."), ex)
+            raise BulbException("Failed to read from the socket.") from ex
 
     def stop_listening(self):
         """Stop listening to notifications."""
@@ -815,9 +813,9 @@ class Bulb(object):
             # create a new one.
             self.__socket.close()
             self.__socket = None
-            raise_from(
-                BulbException("A socket error occurred when sending the command."), ex
-            )
+            raise BulbException(
+                "A socket error occurred when sending the command."
+            ) from ex
 
         if self._music_mode:
             # We're in music mode, nothing else will happen.
