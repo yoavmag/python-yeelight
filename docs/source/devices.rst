@@ -26,6 +26,9 @@ If you find wrong or missing information don't hesitate to file an issue_ or sub
    * - `mono5`
      - -
      - Yeelight Filament Bulb (White)
+   * - `mono6`
+     - XMBGDP01YLK
+     - Mi Smart LED Bulb (Warm White)
    * - `monob`
      - -
      - -
