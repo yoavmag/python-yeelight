@@ -515,7 +515,7 @@ class Bulb(object):
         """Return, optionally creating, the communication socket."""
         if self.__socket is None:
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.__socket.settimeout(5)
+            self.__socket.settimeout(2)
             self.__socket.connect((self._ip, self._port))
         return self.__socket
 
@@ -825,14 +825,27 @@ class Bulb(object):
         # so we want to make sure that we read until we see an actual response.
         response = None
         while response is None:
+            data = None
             try:
                 data = self._socket.recv(16 * 1024)
             except socket.error:
                 # An error occured, let's close and abort...
-                self.__socket.close()
-                self.__socket = None
-                response = {"error": "Bulb closed the connection."}
-                break
+                if data != b"":
+                    try:
+                        _LOGGER.debug("Bulb No response. Retry onece.")
+                        self._socket.send((json.dumps(command) + "\r\n").encode("utf8"))
+                        data = self._socket.recv(16 * 1024)
+                        _LOGGER.debug("Retry connection succeeded.")
+                    except socket.error:
+                        self.__socket.close()
+                        self.__socket = None
+                        response = {"error": "Bulb No response."}
+                        break
+                else:
+                    self.__socket.close()
+                    self.__socket = None
+                    response = {"error": "Bulb closed the connection."}
+                    break
 
             for line in data.split(b"\r\n"):
                 if not line:
