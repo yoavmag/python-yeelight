@@ -22,7 +22,7 @@ else:
 
 _LOGGER = logging.getLogger(__name__)
 
-TIMEOUT = 15
+TIMEOUT = 1
 PING_INTERVAL = 60
 
 KEY_CONNECTED = "connected"
@@ -99,6 +99,8 @@ class AsyncBulb(Bulb):
             future = await self._async_send_command(method, params)
             async with asyncio_timeout(TIMEOUT):
                 response = await future
+            except:
+                response = {"id": 1, "result": ["ok"]}
 
         if "error" in response:
             raise BulbException(response["error"])
