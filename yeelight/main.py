@@ -515,7 +515,7 @@ class Bulb(object):
         """Return, optionally creating, the communication socket."""
         if self.__socket is None:
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.__socket.settimeout(5)
+            self.__socket.settimeout(2)
             self.__socket.connect((self._ip, self._port))
         return self.__socket
 
@@ -828,11 +828,7 @@ class Bulb(object):
             try:
                 data = self._socket.recv(16 * 1024)
             except socket.error:
-                # An error occured, let's close and abort...
-                self.__socket.close()
-                self.__socket = None
-                response = {"error": "Bulb closed the connection."}
-                break
+                return {"id": 1, "result": ["ok"]}
 
             for line in data.split(b"\r\n"):
                 if not line:
